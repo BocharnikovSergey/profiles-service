@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     db_port: int = int(os.getenv("DB_PORT", "5432"))
     db_name: str = os.getenv("DB_NAME", os.getenv("POSTGRES_DB", "mydb"))
     db_user: str = os.getenv("DB_USER", os.getenv("POSTGRES_USER", "postgres"))
-    db_pass: str = os.getenv("DB_PASS", os.getenv("POSTGRES_PASSWORD", "1234"))
+    db_pass: str = os.getenv("DB_PASS", os.getenv("POSTGRES_PASSWORD", "alemdar61"))
     test_db_name: str = os.getenv("TEST_DB_NAME",os.getenv("TEST_POSTGRES","user_test_db"))
 
     db_driver: str = "postgresql+asyncpg"
