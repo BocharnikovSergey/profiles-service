@@ -1,68 +1,237 @@
-# Users Service 👤
-
-Микросервис управления пользователями. Отвечает за хранение профилей, получение информации о пользователях (CRUD) и управление личными данными.
-
-Сервис является частью микросервисной архитектуры и работает за **API Gateway**.
-
-## 🏗 Стек технологий
-
-* **Python 3.12+**
-* **FastAPI** — веб-фреймворк.
-* **SQLAlchemy 2.0 (Async)** — ORM для работы с базой данных.
-* **PostgreSQL** — основная база данных.
-* **Alembic** — миграции базы данных.
-* **Pydantic v2** — валидация и сериализация данных.
-* **Pytest** — тесты.
-
-## 🗃 Модель данных (User)
-
-Основная сущность сервиса — Пользователь.
-
-| Поле | Тип | Описание | Ограничения |
-| :--- | :--- | :--- | :--- |
-| `id` | `Integer` | Уникальный идентификатор | Primary Key, Autoincrement |
-| `email` | `String` | Электронная почта | Unique, Index, Not Null |
-| `hashed_password`| `String` | Хеш пароля | Not Null (хранится для совместимости с Auth) |
-| `first_name` | `String` | Имя | Optional, max 100 chars |
-| `last_name` | `String` | Фамилия | Optional, max 100 chars |
-| `phone_number` | `String` | Телефон | Unique, Optional |
-| `avatar_url` | `String` | Ссылка на аватар | Optional |
-| `is_active` | `Boolean` | Активен ли аккаунт | Default: `True` |
-| `is_superuser` | `Boolean` | Права администратора | Default: `False` |
-| `is_verified` | `Boolean` | Подтверждена ли почта | Default: `False` |
-
-## 🛡 Безопасность и API Gateway
-
-⚠️ **Важно:** Этот сервис **не выполняет** валидацию JWT токенов самостоятельно.
-Предполагается, что запросы приходят от API Gateway, который уже проверил подпись токена.
-
-Сервис ожидает получить идентифицированный запрос.
-
-## 🚀 Ограничения и производительность
-
-* **Кеширование:** На данный момент не используется (планируется Redis для кэширования профилей `/me`).
-* **Rate Limiting (Троттлинг):** Реализован на уровне API Gateway. Сам сервис не ограничивает количество запросов.
+Вот переписанная версия README — уже под **Profile Service в микросервисной архитектуре**, без лишнего про auth-логику внутри сервиса.
 
 ---
 
-## 🛠 Локальный запуск (Development)
+# 👤 Profile Service
 
-Инструкция для запуска **только** этого сервиса изолированно.
+Микросервис управления профилями пользователей.
+Отвечает за хранение и управление персональными данными пользователя (CRUD).
 
-### 1. Предварительные требования
-* Установленный Python 3.10+
-* Установленный Docker (для запуска базы данных)
+Сервис является частью микросервисной архитектуры и работает за **API Gateway**.
 
-### 2. Клонирование и установка зависимостей
+> ⚠️ Авторизация и аутентификация выполняются отдельным Auth-сервисом.
+
+---
+
+# 🏗 Стек технологий
+
+* **Python 3.12+**
+* **FastAPI** — веб-фреймворк
+* **SQLAlchemy 2.0 (Async)** — ORM
+* **PostgreSQL** — база данных
+* **Alembic** — миграции
+* **Pydantic v2** — валидация данных
+* **Pytest** — тестирование
+* **Docker** — контейнеризация
+
+---
+
+# 🗃 Модель данных (Profile)
+
+Основная сущность сервиса — **Profile**.
+
+> ⚠️ `user_id` — это идентификатор пользователя из Auth-сервиса.
+> В базе нет ForeignKey и связей между сервисами.
+
+| Поле           | Тип         | Описание                         | Ограничения          |
+| -------------- | ----------- | -------------------------------- | -------------------- |
+| `id`           | `Integer`   | Уникальный идентификатор профиля | Primary Key          |
+| `user_id`      | `Integer`   | ID пользователя из Auth-сервиса  | Index, Not Null      |
+| `first_name`   | `String`    | Имя                              | Optional, max 100    |
+| `last_name`    | `String`    | Фамилия                          | Optional, max 100    |
+| `phone_number` | `String`    | Телефон                          | Unique, Optional     |
+| `avatar_url`   | `String`    | Ссылка на аватар                 | Optional             |
+| `created_at`   | `Timestamp` | Дата создания                    | server_default=now() |
+| `updated_at`   | `Timestamp` | Дата обновления                  | auto-update          |
+
+---
+
+# 🔌 API Endpoints
+
+## 📌 Создание профиля
+
+```
+POST /profiles
+```
+
+## 📌 Получение профиля по user_id
+
+```
+GET /profiles/{user_id}
+```
+
+## 📌 Получение своего профиля
+
+```
+GET /profiles/me
+```
+
+## 📌 Обновление своего профиля
+
+```
+PATCH /profiles/me
+```
+
+## 📌 Удаление профиля
+
+```
+DELETE /profiles/{user_id}
+```
+
+---
+
+# 🛡 Архитектура безопасности
+
+⚠️ Profile Service:
+
+* ❌ НЕ проверяет JWT
+* ❌ НЕ занимается аутентификацией
+* ❌ НЕ хранит пароли
+
+Авторизация выполняется **API Gateway** + **Auth Service**.
+
+Gateway передаёт `user_id` через заголовки или dependency.
+
+---
+
+# 🔄 Взаимодействие между сервисами
+
+Типичный сценарий:
+
+1. Пользователь регистрируется в Auth Service
+2. Auth Service:
+
+   * либо делает HTTP-запрос в Profile Service
+   * либо отправляет событие (Kafka / RabbitMQ)
+3. Profile Service создаёт профиль с `user_id`
+
+---
+
+# 🚀 Производительность и масштабирование
+
+* Кеширование — планируется Redis (для `/profiles/me`)
+* Rate limiting — реализован на уровне API Gateway
+* Масштабирование — горизонтальное через Docker/Kubernetes
+
+---
+
+# 🐳 Запуск через Docker
+
+### docker-compose.yml (пример)
+
+```yaml
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: profile_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: profile_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
+```
+
+---
+
+# 🛠 Локальный запуск (Development)
+
+### 1️⃣ Предварительные требования
+
+* Python 3.12+
+* Docker
+* PostgreSQL (если без Docker)
+
+---
+
+### 2️⃣ Создание виртуального окружения
 
 ```bash
-# Создаем виртуальное окружение
 python -m venv venv
+```
 
-# Активируем (Windows)
+#### Windows
+
+```bash
 .\venv\Scripts\activate
-# Активируем (macOS/Linux)
-source venv/bin/activate
+```
 
-# Устанавливаем зависимости
+#### macOS / Linux
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+### 3️⃣ Установка зависимостей
+
+```bash
 pip install -r requirements.txt
+```
+
+---
+
+### 4️⃣ Настройка переменных окружения
+
+Создать `.env`:
+
+```
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/profile_db
+```
+
+---
+
+### 5️⃣ Применение миграций
+
+```bash
+alembic upgrade head
+```
+
+---
+
+### 6️⃣ Запуск сервиса
+
+```bash
+uvicorn main:app --reload
+```
+
+Сервис будет доступен:
+
+```
+http://127.0.0.1:8000
+```
+
+Swagger:
+
+```
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 🧪 Тестирование
+
+```bash
+pytest
+```
+
+---
+
+# 📦 Будущие улучшения
+
+* Redis кеширование профиля
+* Event-driven синхронизация с Auth
+* Soft delete вместо hard delete
+* Observability (Prometheus + Grafana)
+* Centralized logging
+
+---

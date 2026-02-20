@@ -2,19 +2,21 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import logging.config
-from app.routes.user_routes import router as user_router
+from app.routes.profiles_routes import router as user_router
 from config import settings
 from app.utils.logging import LOGGING_CONFIG
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.info("Service is starting up...")
-    
+
     yield
-    
+
     logging.info("Service is shutting down...")
+
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -22,8 +24,9 @@ def create_app() -> FastAPI:
         debug=settings.DEBUG,
         lifespan=lifespan,
     )
-    
+
     return app
+
 
 app = create_app()
 
