@@ -8,10 +8,7 @@ from sqlalchemy.pool import NullPool
 from main import app
 from config import settings
 from app.db.database import get_async_session
-from app.db.base import Base  # <--- Убедись, что импортируешь свой Base
-from app.db.models import (
-    User,
-)  # <--- ОБЯЗАТЕЛЬНО импортируй модели, чтобы Base о них знал!
+from app.db.base import Base 
 
 # --- 1. Движок базы (Используем NullPool) ---
 test_engine = create_async_engine(settings.TEST_DATABASE_URL, poolclass=NullPool)
@@ -26,7 +23,6 @@ async def setup_db():
 
     yield  # Здесь бегут тесты
 
-    # (Опционально) Удаляем таблицы после всех тестов
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
