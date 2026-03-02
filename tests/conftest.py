@@ -8,7 +8,7 @@ from sqlalchemy.pool import NullPool
 from main import app
 from config import settings
 from app.db.database import get_async_session
-from app.db.base import Base 
+from app.db.base import Base
 
 # --- 1. Движок базы (Используем NullPool) ---
 test_engine = create_async_engine(settings.TEST_DATABASE_URL, poolclass=NullPool)

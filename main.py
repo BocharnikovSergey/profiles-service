@@ -11,11 +11,13 @@ from app.middlerware.auth import AuthContextMiddleware
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.info("Service is starting up...")
     yield
     logging.info("Service is shutting down...")
+
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -31,5 +33,6 @@ def create_app() -> FastAPI:
     app.include_router(user_router)
 
     return app
+
 
 app = create_app()
