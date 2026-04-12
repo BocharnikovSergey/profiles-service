@@ -5,7 +5,7 @@ from app.dependencies.auth import get_current_user_id
 from app.dependencies.profiles import get_profile_manager
 from app.services.profiles_manager import ProfileManager
 
-router = APIRouter(prefix="/profiles", tags=["Profiles"])
+router = APIRouter(prefix="/profile", tags=["Profiles"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProfileResponse)
