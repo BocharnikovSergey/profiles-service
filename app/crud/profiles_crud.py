@@ -1,20 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models import Profile
-from sqlalchemy import update
-from app.db.models import Profile
-from app.schemas.profiles_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
+from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
 
 
-async def create_profile(db: AsyncSession, profile_in: ProfileCreate) -> Profile:
-
-    new_profile = Profile(
-        user_id=profile_in.user_id,
-        first_name=profile_in.first_name,
-        last_name=profile_in.last_name,
-        phone_number=profile_in.phone_number,
-        avatar_url=profile_in.avatar_url,
-    )
+async def create_profile(
+    db: AsyncSession, user_id: int, profile_in: ProfileCreate
+) -> Profile:
+    profile_data = profile_in.model_dump(exclude_unset=True)
+    new_profile = Profile(user_id=user_id, **profile_data)
 
     db.add(new_profile)
     await db.commit()

@@ -1,17 +1,28 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from pydantic import Field
 
 
 class ProfileBase(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
+    age: Optional[int] = None
+    about_me: Optional[str] = None
+    activities: list[str] = Field(
+        default_factory=list,
+        description="External activity identifiers from activities service",
+    )
+    country: Optional[str] = None
+    city: Optional[str] = None
+    citizenship: Optional[str] = None
+    currency: Optional[str] = None
     avatar_url: Optional[str] = None
 
 
 class ProfileCreate(ProfileBase):
-    user_id: int
+    pass
 
 
 class ProfileUpdate(ProfileBase):
@@ -21,8 +32,6 @@ class ProfileUpdate(ProfileBase):
 class ProfileResponse(ProfileBase):
     id: int
     user_id: int
+    role: str
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True  # для SQLAlchemy 2.0

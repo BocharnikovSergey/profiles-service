@@ -1,64 +1,44 @@
-import asyncio
+from collections.abc import Generator
+import os
+from pathlib import Path
+import sys
+
+import pytest_asyncio
 import pytest
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
+from httpx import ASGITransport, AsyncClient
 
-from main import app
-from config import settings
-from app.db.database import get_async_session
-from app.db.base import Base
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-# --- 1. Движок базы (Используем NullPool) ---
-test_engine = create_async_engine(settings.TEST_DATABASE_URL, poolclass=NullPool)
+os.environ["DEBUG"] = "false"
+
+from app.dependencies.profiles import get_profile_manager
+from main import create_app
 
 
-# --- 2. Создание таблиц без Alembic (самый надежный путь для тестов) ---
-@pytest.fixture(scope="session", autouse=True)
-async def setup_db():
-    # Создаем таблицы перед началом всех тестов
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    yield  # Здесь бегут тесты
-
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+@pytest.fixture
+def app():
+    return create_app()
 
 
-# --- 3. Сессия с автоматическим откатом (Isolating tests) ---
-@pytest.fixture(scope="function")
-async def session():
-    async with test_engine.connect() as connection:
-        # Начинаем транзакцию
-        transaction = await connection.begin()
-
-        # Создаем сессию, привязанную к этому конкретному соединению
-        async_session = AsyncSession(
-            bind=connection,
-            expire_on_commit=False,
-        )
-
-        yield async_session
-
-        # Откатываем всё, что сделал тест, чтобы база осталась чистой
-        await transaction.rollback()
-        await connection.close()
-
-
-# --- 4. Асинхронный клиент с правильным переопределением ---
-@pytest.fixture(scope="function")
-async def client(session):
-    # FastAPI ожидает генератор, поэтому используем async def
-    async def override_get_async_session():
-        yield session
-
-    app.dependency_overrides[get_async_session] = override_get_async_session
-
+@pytest_asyncio.fixture
+async def client(app) -> Generator[AsyncClient, None, None]:
+    transport = ASGITransport(app=app)
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        yield ac
+        transport=transport, base_url="http://testserver"
+    ) as test_client:
+        yield test_client
 
+
+@pytest.fixture
+def override_manager(app):
+    def _override(manager):
+        async def _get_manager():
+            return manager
+
+        app.dependency_overrides[get_profile_manager] = _get_manager
+        return manager
+
+    yield _override
     app.dependency_overrides.clear()

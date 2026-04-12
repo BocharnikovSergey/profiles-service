@@ -1,72 +1,62 @@
-from fastapi import APIRouter, status, Depends, HTTPException, Request
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, status, Depends, Request, HTTPException
 
 from app.schemas.profiles_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
-from app.db.database import get_async_session
-from app.crud.profiles_crud import (
-    create_profile,
-    get_profile_by_user_id,
-    delete_profile_by_user_id,
-    update_profile,
-)
+from app.dependencies.auth import get_current_user_id
+from app.dependencies.profiles import get_profile_manager
+from app.services.profiles_manager import ProfileManager
 
 router = APIRouter(prefix="/profiles", tags=["Profiles"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProfileResponse)
 async def create_new_profile(
-    payload: ProfileCreate, session: AsyncSession = Depends(get_async_session)
+    payload: ProfileCreate,
+    request: Request,
+    manager: ProfileManager = Depends(get_profile_manager),
 ):
-    profile = await create_profile(session, payload)
-    return profile
-
-
-@router.get("/{user_id}", response_model=ProfileResponse)
-async def get_profile_api(
-    request: Request, session: AsyncSession = Depends(get_async_session)
-):
-    profile = await get_profile_by_user_id(session, request.state.user_id)
-
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
-    return profile
+    user_id = get_current_user_id(request)
+    return await manager.create_profile(user_id, payload)
 
 
 @router.get("/me", response_model=ProfileResponse)
 async def get_my_profile(
     request: Request,
-    session: AsyncSession = Depends(get_async_session),
+    manager: ProfileManager = Depends(get_profile_manager),
 ):
-    profile = await get_profile_by_user_id(session, int(request.state.user_id))
+    return await manager.get_profile_by_user_id(get_current_user_id(request))
 
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
 
-    return profile
+@router.get("/{user_id}", response_model=ProfileResponse)
+async def get_profile_by_id(
+    user_id: int,
+    request: Request,
+    manager: ProfileManager = Depends(get_profile_manager),
+):
+    current_user_id = get_current_user_id(request)
+    if current_user_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    return await manager.get_profile_by_user_id(user_id)
 
 
 @router.patch("/me", response_model=ProfileResponse)
 async def update_my_profile(
     payload: ProfileUpdate,
     request: Request,
-    session: AsyncSession = Depends(get_async_session),
+    manager: ProfileManager = Depends(get_profile_manager),
 ):
-    updated_profile = await update_profile(session, int(request.state.user_id), payload)
-
-    if not updated_profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
-    return updated_profile
+    return await manager.update_profile(get_current_user_id(request), payload)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_profile_route(
-    request: Request, session: AsyncSession = Depends(get_async_session)
+async def delete_profile_by_id(
+    user_id: int,
+    request: Request,
+    manager: ProfileManager = Depends(get_profile_manager),
 ):
-    deleted = await delete_profile_by_user_id(session, request.state.user_id)
+    current_user_id = get_current_user_id(request)
+    if current_user_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
+    await manager.delete_profile_by_user_id(user_id)
     return None

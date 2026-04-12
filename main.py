@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from config import settings
 from app.utils.logging import LOGGING_CONFIG
 from app.routes.profiles_routes import router as user_router
-from app.middlerware.auth import AuthContextMiddleware
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
@@ -21,13 +20,17 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title=settings.APP_NAME,
-        debug=settings.DEBUG,
+        docs_url=f"/api/{settings.app_name.split('-')[0]}/docs",
+        redoc_url=f"/api/{settings.app_name.split('-')[0]}/redoc",
+        openapi_url=f"/api/{settings.app_name.split('-')[0]}/openapi.json",
+        title=settings.app_name,
+        debug=settings.debug,
         lifespan=lifespan,
     )
 
-    # Регистрируем middleware
-    app.add_middleware(AuthContextMiddleware)
+    @app.get("/health")
+    async def health_check():
+        return {"status": "ok"}
 
     # Подключаем роутеры
     app.include_router(user_router)
