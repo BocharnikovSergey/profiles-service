@@ -28,7 +28,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    @app.get(f"api/{settings.app_name.split('-')[0]}/health")
+    @app.get(f"/api/{settings.app_name.split('-')[0]}/health")
     async def health_check():
         return {"status": "ok"}
 
