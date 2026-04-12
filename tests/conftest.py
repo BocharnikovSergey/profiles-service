@@ -13,8 +13,8 @@ if str(ROOT) not in sys.path:
 
 os.environ["DEBUG"] = "false"
 
-from app.dependencies.profiles import get_profile_manager # noqa E402 
-from main import create_app # noqa E402 
+from app.dependencies.profiles import get_profile_manager # noqa E402
+from main import create_app # noqa E402
 
 
 @pytest.fixture
