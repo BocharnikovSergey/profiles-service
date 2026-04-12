@@ -68,7 +68,7 @@ async def test_create_profile_uses_current_user_id(
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.post("/profiles/", json={"first_name": "Ann"})
+    response = await client.post("/api/profile/", json={"first_name": "Ann"})
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["user_id"] == 7
@@ -82,7 +82,7 @@ async def test_get_profile_by_id_returns_forbidden_for_another_user(
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.get("/profiles/8")
+    response = await client.get("/api/profile/8")
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()["detail"] == "Forbidden"
@@ -96,7 +96,7 @@ async def test_get_my_profile_uses_current_user_id(
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.get("/profiles/me")
+    response = await client.get("/api/profile/me")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["id"] == 1
@@ -110,7 +110,7 @@ async def test_update_my_profile_uses_current_user_id(
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.patch("/profiles/me", json={"first_name": "Updated"})
+    response = await client.patch("/api/profile/me", json={"first_name": "Updated"})
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["first_name"] == "Updated"
@@ -126,7 +126,7 @@ async def test_delete_profile_by_id_returns_no_content_for_owner(
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.delete("/profiles/7")
+    response = await client.delete("/api/profile/7")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert response.content == b""
