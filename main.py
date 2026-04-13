@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from config import settings
+from app.middlerware.request_context import user_context_middleware
 from app.utils.logging import LOGGING_CONFIG
 from app.routes.profiles_routes import router as user_router
 
@@ -27,6 +28,8 @@ def create_app() -> FastAPI:
         debug=settings.debug,
         lifespan=lifespan,
     )
+
+    app.middleware("http")(user_context_middleware)
 
     @app.get(f"/api/{settings.app_name.split('-')[0]}/health")
     async def health_check():
