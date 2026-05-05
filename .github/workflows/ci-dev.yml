@@ -10,7 +10,7 @@ on:
 
 env:
   DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE || 'ride2trip' }}
-  AUTH_SWARM_SERVICE: ${{ vars.AUTH_SWARM_SERVICE || 'apps_auth-service' }}
+  PROFILE_SWARM_SERVICE: ${{ vars.PROFILE_SWARM_SERVICE || 'apps_profile-service' }}
   DATA_NETWORK: ${{ vars.DATA_NETWORK || 'data-network' }}
 
 jobs:
@@ -57,18 +57,18 @@ jobs:
       - name: Compute image ref
         id: image
         run: |
-          image_ref="${DOCKERHUB_NAMESPACE}/auth-service:dev-${GITHUB_SHA::7}"
-          echo "AUTH_IMAGE_REF=$image_ref" >> "$GITHUB_ENV"
+          image_ref="${DOCKERHUB_NAMESPACE}/profile-service:dev-${GITHUB_SHA::7}"
+          echo "PROFILE_IMAGE_REF=$image_ref" >> "$GITHUB_ENV"
           echo "ref=$image_ref" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push auth-service
+      - name: Build and push profile-service
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
             ${{ steps.image.outputs.ref }}
-            ${{ env.DOCKERHUB_NAMESPACE }}/auth-service:dev
+            ${{ env.DOCKERHUB_NAMESPACE }}/profile-service:dev
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -80,7 +80,7 @@ jobs:
     environment: DEV
     steps:
       - name: Compute image ref
-        run: echo "AUTH_IMAGE_REF=${DOCKERHUB_NAMESPACE}/auth-service:dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+        run: echo "PROFILE_IMAGE_REF=${DOCKERHUB_NAMESPACE}/profile-service:dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -94,11 +94,11 @@ jobs:
           docker context create swarm --docker "host=ssh://${{ secrets.SWARM_USER }}@${{ secrets.SWARM_HOST }}"
           docker --context swarm info
 
-      - name: Run auth migrations via entrypoint
+      - name: Run profile migrations via entrypoint
         run: |
           set -euo pipefail
 
-          service_name="auth-migrate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          service_name="profile-migrate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 
           cleanup() {
             docker --context swarm service rm "$service_name" >/dev/null 2>&1 || true
@@ -113,30 +113,30 @@ jobs:
             --restart-condition none \
             --mode replicated-job \
             --network "$DATA_NETWORK" \
-            --secret DB_AUTH_SERVICE_HOST \
-            --secret DB_AUTH_SERVICE_PORT \
-            --secret DB_AUTH_SERVICE_NAME \
-            --secret DB_AUTH_SERVICE_USER \
-            --secret DB_AUTH_SERVICE_PASS \
+            --secret DB_PROFILE_SERVICE_HOST \
+            --secret DB_PROFILE_SERVICE_PORT \
+            --secret DB_PROFILE_SERVICE_NAME \
+            --secret DB_PROFILE_SERVICE_USER \
+            --secret DB_PROFILE_SERVICE_PASS \
             --env APP_MODE=migrate \
-            --env DB_AUTH_SERVICE_HOST_FILE=/run/secrets/DB_AUTH_SERVICE_HOST \
-            --env DB_AUTH_SERVICE_PORT_FILE=/run/secrets/DB_AUTH_SERVICE_PORT \
-            --env DB_AUTH_SERVICE_NAME_FILE=/run/secrets/DB_AUTH_SERVICE_NAME \
-            --env DB_AUTH_SERVICE_USER_FILE=/run/secrets/DB_AUTH_SERVICE_USER \
-            --env DB_AUTH_SERVICE_PASS_FILE=/run/secrets/DB_AUTH_SERVICE_PASS \
+            --env DB_PROFILE_SERVICE_HOST_FILE=/run/secrets/DB_PROFILE_SERVICE_HOST \
+            --env DB_PROFILE_SERVICE_PORT_FILE=/run/secrets/DB_PROFILE_SERVICE_PORT \
+            --env DB_PROFILE_SERVICE_NAME_FILE=/run/secrets/DB_PROFILE_SERVICE_NAME \
+            --env DB_PROFILE_SERVICE_USER_FILE=/run/secrets/DB_PROFILE_SERVICE_USER \
+            --env DB_PROFILE_SERVICE_PASS_FILE=/run/secrets/DB_PROFILE_SERVICE_PASS \
             --with-registry-auth \
-            "$AUTH_IMAGE_REF"; then
+            "$PROFILE_IMAGE_REF"; then
             docker --context swarm service logs "$service_name" || true
             exit 1
           fi
 
           docker --context swarm service logs "$service_name" || true
 
-      - name: Update auth service
+      - name: Update profile service
         run: |
           set -euo pipefail
           docker --context swarm service update \
             --with-registry-auth \
             --detach=false \
-            --image "$AUTH_IMAGE_REF" \
-            "$AUTH_SWARM_SERVICE"
+            --image "$PROFILE_IMAGE_REF" \
+            "$PROFILE_SWARM_SERVICE"
