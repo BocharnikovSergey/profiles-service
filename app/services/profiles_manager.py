@@ -3,10 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.profiles_crud import (
     create_profile as crud_create_profile,
+    admin_create_profile as crud_admin_create_profile,
     delete_profile_by_user_id as crud_delete_profile_by_user_id,
+    delete_profile_by_id as crud_delete_profile_by_id,
     get_profile_by_user_id as crud_get_profile_by_user_id,
-    update_profile as crud_update_profile,
+    get_profile_by_id as crud_get_profile_by_id,
+    update_profile_by_user_id as crud_update_profile_by_user_id,
+    update_profile_by_id as crud_update_profile_by_id,
 )
+from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
 from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
 
 
@@ -24,6 +29,18 @@ class ProfileManager:
 
         return await crud_create_profile(self.db, user_id, profile_in)
 
+    async def admin_create_profile(self, profile_in: AdminProfileCreate):
+        existing_profile = await crud_get_profile_by_user_id(
+            self.db, profile_in.user_id
+        )
+        if existing_profile:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Profile already exists",
+            )
+
+        return await crud_admin_create_profile(self.db, profile_in)
+
     async def get_profile_by_user_id(self, user_id: int):
         profile = await crud_get_profile_by_user_id(self.db, user_id)
         if not profile:
@@ -32,8 +49,24 @@ class ProfileManager:
             )
         return profile
 
-    async def update_profile(self, user_id: int, payload: ProfileUpdate):
-        profile = await crud_update_profile(self.db, user_id, payload)
+    async def get_profile_by_id(self, profile_id: int):
+        profile = await crud_get_profile_by_id(self.db, profile_id)
+        if not profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
+            )
+        return profile
+
+    async def update_profile_by_user_id(self, user_id: int, payload: ProfileUpdate):
+        profile = await crud_update_profile_by_user_id(self.db, user_id, payload)
+        if not profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
+            )
+        return profile
+
+    async def update_profile_by_id(self, profile_id: int, payload: ProfileUpdate):
+        profile = await crud_update_profile_by_id(self.db, profile_id, payload)
         if not profile:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
@@ -42,6 +75,13 @@ class ProfileManager:
 
     async def delete_profile_by_user_id(self, user_id: int) -> None:
         deleted = await crud_delete_profile_by_user_id(self.db, user_id)
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
+            )
+
+    async def delete_profile_by_id(self, profile_id: int) -> None:
+        deleted = await crud_delete_profile_by_id(self.db, profile_id)
         if not deleted:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"

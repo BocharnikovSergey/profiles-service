@@ -12,12 +12,11 @@ LOGGING_CONFIG = {
             "formatter": "default",
         },
     },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
     "loggers": {
-        "users": {  # твой логгер
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
         "uvicorn": {  # включаем логи uvicorn
             "handlers": ["console"],
             "level": "INFO",

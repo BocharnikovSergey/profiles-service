@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import String, Text, func, Integer, JSON, text
+from sqlalchemy import CheckConstraint, func, Integer, JSON, String, text, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 from typing import Optional
@@ -7,6 +7,10 @@ from typing import Optional
 
 class Profile(Base):
     __tablename__ = "profiles"
+
+    __table_args__ = (
+        CheckConstraint("user_id > 0", name="ck_profiles_user_id_positive"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
