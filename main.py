@@ -1,4 +1,3 @@
-# src/main.py
 import logging.config
 from contextlib import asynccontextmanager
 
@@ -8,15 +7,18 @@ from config import settings
 from app.middlerware.request_context import user_context_middleware
 from app.utils.logging import LOGGING_CONFIG
 from app.routes.profiles_routes import router as user_router
+from app.routes.admin_routes import router as admin_router
 
 logging.config.dictConfig(LOGGING_CONFIG)
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.info("Service is starting up...")
+    logger.info("Service is starting up...")
     yield
-    logging.info("Service is shutting down...")
+    logger.info("Service is shutting down...")
 
 
 def create_app() -> FastAPI:
@@ -35,8 +37,11 @@ def create_app() -> FastAPI:
     async def health_check():
         return {"status": "ok"}
 
-    # Подключаем роутеры
+    # Подключаем пользовательские роутеры
     app.include_router(user_router)
+
+    # Подключаем администратоские роутеры
+    app.include_router(admin_router)
 
     return app
 

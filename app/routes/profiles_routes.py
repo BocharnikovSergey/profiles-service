@@ -1,9 +1,13 @@
+import logging
+
 from fastapi import APIRouter, status, Depends, Request, HTTPException
 
 from app.schemas.profiles_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
 from app.dependencies.auth import get_current_user_id
 from app.dependencies.profiles import get_profile_manager
 from app.services.profiles_manager import ProfileManager
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/profile", tags=["Profiles"])
 
