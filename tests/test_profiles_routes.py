@@ -52,8 +52,8 @@ class StubProfileManager:
         self.calls.append(("get_profile_by_user_id", user_id))
         return self.profile
 
-    async def update_profile(self, user_id, payload):
-        self.calls.append(("update_profile", user_id, payload.model_dump()))
+    async def update_profile_by_user_id(self, user_id, payload):
+        self.calls.append(("update_profile_by_user_id", user_id, payload.model_dump()))
         return {**self.profile, **payload.model_dump(exclude_unset=True)}
 
     async def delete_profile_by_user_id(self, user_id):
@@ -115,7 +115,7 @@ async def test_update_my_profile_uses_current_user_id(
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["first_name"] == "Updated"
     assert manager.calls == [
-        ("update_profile", 7, expected_payload(first_name="Updated"))
+        ("update_profile_by_user_id", 7, expected_payload(first_name="Updated"))
     ]
 
 

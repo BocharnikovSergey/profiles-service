@@ -1,10 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 from pydantic import Field
 
 
 class ProfileBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
@@ -30,6 +32,8 @@ class ProfileUpdate(ProfileBase):
 
 
 class ProfileResponse(ProfileBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     role: str

@@ -67,17 +67,19 @@ venv/bin/uvicorn main:app --reload
 
 После запуска сервис доступен по адресам:
 
-- `http://127.0.0.1:8000/health`
+- `http://127.0.0.1:8000/api/profile/health`
 - `http://127.0.0.1:8000/api/profile/docs`
 - `http://127.0.0.1:8000/api/profile/openapi.json`
 
 ## API
 
-Базовый префикс профилей: `/profile`
+Базовый префикс профилей: `/api/profile`
+
+Базовый префикс админских ручек: `/api/admin/profile`. Они вызываются gateway из закрытой сети.
 
 Все защищенные ручки ожидают, что в `request.state.user` уже будет положен пользователь gateway-мидлварью или внешней auth-логикой.
 
-### `POST /profile/`
+### `POST /api/profile/`
 
 Создает профиль для текущего пользователя.
 
@@ -105,7 +107,7 @@ venv/bin/uvicorn main:app --reload
 - `401 Unauthorized` - пользователь не определен
 - `409 Conflict` - профиль уже существует
 
-### `GET /profile/me`
+### `GET /api/profile/me`
 
 Возвращает профиль текущего пользователя.
 
@@ -115,7 +117,7 @@ venv/bin/uvicorn main:app --reload
 - `401 Unauthorized` - пользователь не определен
 - `404 Not Found` - профиль не найден
 
-### `GET /profile/{user_id}`
+### `GET /api/profile/{user_id}`
 
 Возвращает профиль по `user_id`, но только если `user_id` совпадает с текущим пользователем.
 
@@ -126,7 +128,7 @@ venv/bin/uvicorn main:app --reload
 - `403 Forbidden` - запрошен чужой профиль
 - `404 Not Found` - профиль не найден
 
-### `PATCH /profile/me`
+### `PATCH /api/profile/me`
 
 Частично обновляет профиль текущего пользователя.
 
@@ -146,7 +148,7 @@ venv/bin/uvicorn main:app --reload
 - `401 Unauthorized` - пользователь не определен
 - `404 Not Found` - профиль не найден
 
-### `DELETE /profile/{user_id}`
+### `DELETE /api/profile/{user_id}`
 
 Удаляет профиль по `user_id`, но только если `user_id` совпадает с текущим пользователем.
 

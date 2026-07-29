@@ -1,10 +1,11 @@
 from fastapi import APIRouter, status, Depends, Request
 
-from app.schemas.admin_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
+from app.schemas.admin_schemas import ProfileCreate
+from app.schemas.profiles_schemas import ProfileResponse, ProfileUpdate
 from app.dependencies.profiles import get_profile_manager
 from app.services.profiles_manager import ProfileManager
 
-router = APIRouter(prefix="/api/profile/admin", tags=["Admin Profile"])
+router = APIRouter(prefix="/api/admin/profile", tags=["Admin Profile"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProfileResponse)
