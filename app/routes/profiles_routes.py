@@ -52,15 +52,10 @@ async def update_my_profile(
     return await manager.update_profile_by_user_id(get_current_user_id(request), payload)
 
 
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_profile_by_id(
-    user_id: int,
     request: Request,
     manager: ProfileManager = Depends(get_profile_manager),
 ):
-    current_user_id = get_current_user_id(request)
-    if current_user_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-
-    await manager.delete_profile_by_user_id(user_id)
+    await manager.delete_profile_by_user_id(get_current_user_id(request))
     return None

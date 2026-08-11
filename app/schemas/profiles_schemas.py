@@ -20,7 +20,8 @@ class ProfileBase(BaseModel):
     city: Optional[str] = None
     citizenship: Optional[str] = None
     currency: Optional[str] = None
-    avatar_url: Optional[str] = None
+    # Времено отключено по просьбе тестеров. До подключения бакета
+    # avatar_url: Optional[str] = None
 
 
 class ProfileCreate(ProfileBase):

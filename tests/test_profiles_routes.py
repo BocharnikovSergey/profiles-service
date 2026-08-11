@@ -16,7 +16,6 @@ def expected_payload(**overrides):
         "city": None,
         "citizenship": None,
         "currency": None,
-        "avatar_url": None,
     }
     payload.update(overrides)
     return payload
@@ -39,7 +38,7 @@ class StubProfileManager:
             "city": None,
             "citizenship": None,
             "currency": None,
-            "avatar_url": None,
+
             "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
             "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
         }
@@ -126,7 +125,7 @@ async def test_delete_profile_by_id_returns_no_content_for_owner(
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.delete("/api/profile/7")
+    response = await client.delete("/api/profile/me")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert response.content == b""
