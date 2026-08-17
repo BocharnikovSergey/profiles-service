@@ -37,9 +37,9 @@ async def test_x_user_claims_header_is_restored_into_request_state(
     client, override_manager
 ):
     manager = override_manager(StubProfileManager())
-    claims = base64.urlsafe_b64encode(
-        json.dumps({"sub": "7"}).encode("utf-8")
-    ).decode("ascii")
+    claims = base64.urlsafe_b64encode(json.dumps({"sub": "7"}).encode("utf-8")).decode(
+        "ascii"
+    )
 
     response = await client.get(
         "/api/profile/me",
@@ -48,4 +48,3 @@ async def test_x_user_claims_header_is_restored_into_request_state(
 
     assert response.status_code == status.HTTP_200_OK
     assert manager.calls == [("get_profile_by_user_id", 7)]
-

@@ -49,7 +49,9 @@ async def update_my_profile(
     request: Request,
     manager: ProfileManager = Depends(get_profile_manager),
 ):
-    return await manager.update_profile_by_user_id(get_current_user_id(request), payload)
+    return await manager.update_profile_by_user_id(
+        get_current_user_id(request), payload
+    )
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

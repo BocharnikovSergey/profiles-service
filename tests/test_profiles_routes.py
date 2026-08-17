@@ -38,7 +38,6 @@ class StubProfileManager:
             "city": None,
             "citizenship": None,
             "currency": None,
-
             "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
             "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
         }
