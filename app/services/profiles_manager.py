@@ -75,4 +75,3 @@ class ProfileManager:
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Profile already exists",
             )
-        

@@ -3,7 +3,6 @@ name: PR Checks
 on:
   pull_request:
     branches:
-      - develop
       - main
 
 jobs:
@@ -25,7 +24,10 @@ jobs:
           python -m pip install -r requirements.test.txt
 
       - name: Lint (ruff)
-        run: ruff check --select F,E9 .
+        run: |
+          ruff check --select F,E9 .
+          ruff check .
+          ruff format --check .
 
       - name: Tests
         run: pytest -q
