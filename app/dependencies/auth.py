@@ -16,7 +16,7 @@ def get_current_user_id(request: Request) -> int:
             detail="Unauthorized",
         )
 
-    user_id = user.get("sub")
+    user_id = user.get("id")
     logger.info("ID пользователя %s", user_id)
     if user_id in (None, ""):
         logging.warning(f"sub отсутствует в user_data. Type {type(user)}. data: {user}")
