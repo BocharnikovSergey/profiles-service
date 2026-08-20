@@ -35,3 +35,15 @@ def get_current_user_id(request: Request) -> int:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unauthorized",
         ) from exc
+
+
+def check_user_access(request: Request, user_id: int) -> int:
+    current_user_id = get_current_user_id(request)
+
+    if current_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden",
+        )
+
+    return current_user_id

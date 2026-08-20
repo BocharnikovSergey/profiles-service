@@ -1,6 +1,9 @@
 from datetime import datetime
-from sqlalchemy import CheckConstraint, func, Integer, JSON, String, text, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import (
+    CheckConstraint, DateTime, func, ForeignKey, Integer, JSON, String, text,
+    Text, UniqueConstraint
+)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 from typing import Optional
 
@@ -43,6 +46,37 @@ class Profile(Base):
     updated_at: Mapped[datetime] = mapped_column(
         server_default=func.now(), onupdate=func.now()
     )
+    favorites: Mapped[list["FavoriteLocation"]] = relationship(
+        back_populates="profile", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Profile {self.first_name}: {self.last_name}>"
+
+
+
+class FavoriteLocation(Base):
+    __tablename__ = "favorite_locations"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "profile_id", "location_id",
+            name="uq_favorite_locations_profile_location"
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    location_id: Mapped[int] = mapped_column(
+        Integer, nullable=False, index=True
+    )
+    profile_id: Mapped[int] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    profile: Mapped[Profile] = relationship(back_populates="favorites")
