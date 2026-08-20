@@ -48,6 +48,7 @@ async def _find_by_user_id(db: AsyncSession, user_id: int):
     result = await db.execute(select(Profile).where(Profile.user_id == user_id))
     return result.scalar_one_or_none()
 
+
 async def create_profile(
     db: AsyncSession, user_id: int, profile_in: ProfileCreate
 ) -> Profile:
