@@ -38,7 +38,7 @@ async def test_x_user_claims_header_is_restored_into_request_state(
 ):
     manager = override_manager(StubProfileManager())
     claims = base64.urlsafe_b64encode(
-        json.dumps({"sub": "7"}).encode("utf-8")
+        json.dumps({"id": "7"}).encode("utf-8")
     ).decode("ascii")
 
     response = await client.get(
