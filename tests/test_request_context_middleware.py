@@ -1,6 +1,6 @@
 import base64
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from fastapi import status
@@ -23,8 +23,8 @@ class StubProfileManager:
             "city": None,
             "citizenship": None,
             "currency": None,
-            "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
-            "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+            "created_at": datetime(2024, 1, 1, tzinfo=UTC),
+            "updated_at": datetime(2024, 1, 1, tzinfo=UTC),
         }
 
     async def get_profile_by_user_id(self, user_id):

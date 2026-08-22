@@ -1,25 +1,24 @@
-from pydantic import BaseModel, ConfigDict
-from typing import Optional
 from datetime import datetime
-from pydantic import Field
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProfileBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    phone_number: Optional[str] = None
-    age: Optional[int] = None
-    about_me: Optional[str] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    phone_number: str | None = None
+    age: int | None = None
+    about_me: str | None = None
     activities: list[str] = Field(
         default_factory=list,
         description="External activity identifiers from activities service",
     )
-    country: Optional[str] = None
-    city: Optional[str] = None
-    citizenship: Optional[str] = None
-    currency: Optional[str] = None
+    country: str | None = None
+    city: str | None = None
+    citizenship: str | None = None
+    currency: str | None = None
     # Времено отключено по просьбе тестеров. До подключения бакета
     # avatar_url: Optional[str] = None
 

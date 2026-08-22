@@ -1,10 +1,10 @@
-from collections.abc import Generator
 import os
-from pathlib import Path
 import sys
+from collections.abc import Generator
+from pathlib import Path
 
-import pytest_asyncio
 import pytest
+import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,8 +13,8 @@ if str(ROOT) not in sys.path:
 
 os.environ["DEBUG"] = "false"
 
-from app.dependencies.profiles import get_profile_manager  # noqa E402
-from main import create_app  # noqa E402
+from app.dependencies.profiles import get_profile_manager
+from main import create_app
 
 
 @pytest.fixture

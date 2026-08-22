@@ -1,10 +1,10 @@
 import logging
 
-from fastapi import APIRouter, status, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.schemas.profiles_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
 from app.dependencies.auth import get_current_user_id
 from app.dependencies.profiles import get_profile_manager
+from app.schemas.profiles_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
 from app.services.profiles_manager import ProfileManager
 
 logger = logging.getLogger(__name__)
@@ -60,4 +60,3 @@ async def delete_profile_by_id(
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     await manager.delete_profile_by_user_id(get_current_user_id(request))
-    return None
