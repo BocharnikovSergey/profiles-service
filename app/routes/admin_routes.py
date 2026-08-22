@@ -1,8 +1,8 @@
-from fastapi import APIRouter, status, Depends, Request
+from fastapi import APIRouter, Depends, Request, status
 
+from app.dependencies.profiles import get_profile_manager
 from app.schemas.admin_schemas import ProfileCreate
 from app.schemas.profiles_schemas import ProfileResponse, ProfileUpdate
-from app.dependencies.profiles import get_profile_manager
 from app.services.profiles_manager import ProfileManager
 
 router = APIRouter(prefix="/api/admin/profile", tags=["Admin Profile"])
@@ -62,7 +62,6 @@ async def delete_profile_by_user_id(
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     await manager.delete_profile_by_user_id(user_id)
-    return None
 
 
 @router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -72,4 +71,3 @@ async def delete_profile_by_id(
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     await manager.delete_profile_by_id(profile_id)
-    return None

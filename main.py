@@ -3,11 +3,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from config import settings
 from app.middlerware.request_context import user_context_middleware
-from app.utils.logging import LOGGING_CONFIG
-from app.routes.profiles_routes import router as user_router
 from app.routes.admin_routes import router as admin_router
+from app.routes.profiles_routes import router as user_router
+from app.utils.logging import LOGGING_CONFIG
+from config import settings
 
 logging.config.dictConfig(LOGGING_CONFIG)
 

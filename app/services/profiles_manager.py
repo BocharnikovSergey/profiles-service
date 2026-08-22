@@ -2,14 +2,28 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.profiles_crud import (
-    create_profile as crud_create_profile,
     admin_create_profile as crud_admin_create_profile,
-    delete_profile_by_user_id as crud_delete_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
+    create_profile as crud_create_profile,
+)
+from app.crud.profiles_crud import (
     delete_profile_by_id as crud_delete_profile_by_id,
-    get_profile_by_user_id as crud_get_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
+    delete_profile_by_user_id as crud_delete_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
     get_profile_by_id as crud_get_profile_by_id,
-    update_profile_by_user_id as crud_update_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
+    get_profile_by_user_id as crud_get_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
     update_profile_by_id as crud_update_profile_by_id,
+)
+from app.crud.profiles_crud import (
+    update_profile_by_user_id as crud_update_profile_by_user_id,
 )
 from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
 from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
