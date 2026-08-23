@@ -52,7 +52,8 @@ class FavoriteLocationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     location_id: int
+    created_at: datetime
 
 class FavoriteLocationsResponse(BaseModel):
 
-    location_ids: list[int]
+    location_ids: list[FavoriteLocationResponse]

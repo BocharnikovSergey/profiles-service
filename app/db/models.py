@@ -54,7 +54,6 @@ class Profile(Base):
         return f"<Profile {self.first_name}: {self.last_name}>"
 
 
-
 class FavoriteLocation(Base):
     __tablename__ = "favorite_locations"
 
@@ -65,18 +64,10 @@ class FavoriteLocation(Base):
         ),
     )
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    location_id: Mapped[int] = mapped_column(
-        Integer, nullable=False, index=True
-    )
+    location_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     profile_id: Mapped[int] = mapped_column(
-        ForeignKey("profiles.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
     profile: Mapped[Profile] = relationship(back_populates="favorites")

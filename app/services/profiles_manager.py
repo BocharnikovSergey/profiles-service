@@ -14,9 +14,8 @@ from app.crud.profiles_crud import (
     update_profile_by_id as crud_update_profile_by_id,
 )
 from app.crud.favorite_locations_crud import (
-    add_favorite_location as crud_add_favorite_location,
+    get_or_create_favorite_location as crud_get_or_create_favorite_location,
     delete_favorite_location as crud_delete_favorite_location,
-    get_favorite_location as crud_get_favorite_location,
     get_favorite_location_ids as crud_get_favorite_location_ids,
 )
 from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
@@ -76,50 +75,39 @@ class ProfileManager:
 
 
     async def add_favorite_location(self, user_id: int, location_id: int):
-        profile = self._raise_not_found(
-            await crud_get_profile_by_user_id(self.db, user_id)
+        favorite_location = await crud_get_or_create_favorite_location(
+            self.db, user_id, location_id,
         )
-        self._raise_conflict_if_exists(
-            await crud_get_favorite_location(self.db, profile.id, location_id),
-            detail="Location is already in favorites"
-        )
-        return await crud_add_favorite_location(
-            self.db, profile.id, location_id,
-        )
+        self._raise_not_found(favorite_location, detail='Not found')
+        return favorite_location
 
     async def get_favorite_location_ids(
         self, user_id: int,
     ) -> list[int]:
-        profile = self._raise_not_found(
-            await crud_get_profile_by_user_id(self.db, user_id)
-        )
-        return await crud_get_favorite_location_ids(self.db, profile.id)
+        return await crud_get_favorite_location_ids(self.db, user_id)
 
     async def delete_favorite_location(
         self, user_id: int, location_id: int,
     ) -> None:
-        profile = self._raise_not_found(
-            await crud_get_profile_by_user_id(self.db, user_id)
-        )
-        self._raise_not_found(
-            await crud_delete_favorite_location(
-                self.db, profile.id, location_id,
-            ), detail="Favorite location not found"
-        )
+        await crud_delete_favorite_location(self.db, user_id, location_id)
 
+    def get_or_raise_not_found(
+        self, obj: T, detail: str = "Profile not found"
+    ) -> T:
+        self._raise_not_found(obj, detail)
+        return obj
 
     @staticmethod
-    def _raise_not_found(obj: T | None, detail="Profile not found") -> T:
+    def _raise_not_found(obj: T, detail: str="Profile not found") -> None:
         if not obj:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=detail
             )
-        return obj
 
     @staticmethod
     def _raise_conflict_if_exists(
-        existing_obj, detail="Profile already exists"
-    ):
+        existing_obj: T | None, detail: str ="Profile already exists"
+    ) -> None:
         if existing_obj:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail=detail,
