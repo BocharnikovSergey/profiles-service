@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -63,11 +63,11 @@ class StubProfileManager:
         return [
             SimpleNamespace(
                 location_id=10,
-                created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+                created_at=datetime(2024, 1, 1, tzinfo=UTC),
             ),
             SimpleNamespace(
                 location_id=20,
-                created_at=datetime(2024, 1, 2, tzinfo=timezone.utc),
+                created_at=datetime(2024, 1, 2, tzinfo=UTC),
             ),
         ]
 
@@ -75,7 +75,7 @@ class StubProfileManager:
         self.calls.append(("add_favorite_location", user_id, location_id))
         return SimpleNamespace(
             location_id=location_id,
-            created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
         )
 
     async def delete_favorite_location(self, user_id, location_id):

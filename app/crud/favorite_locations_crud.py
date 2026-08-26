@@ -1,4 +1,4 @@
-from sqlalchemy import delete, exists, select, literal
+from sqlalchemy import delete, exists, literal, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 

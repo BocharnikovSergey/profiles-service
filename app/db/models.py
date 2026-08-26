@@ -1,9 +1,19 @@
 from datetime import datetime
+
 from sqlalchemy import (
-    CheckConstraint, DateTime, func, ForeignKey, Integer, JSON, String, text,
-    Text, UniqueConstraint
+    JSON,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base
 
 

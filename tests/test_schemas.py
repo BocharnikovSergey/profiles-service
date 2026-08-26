@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -6,9 +6,11 @@ from pydantic import ValidationError
 
 from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
 from app.schemas.admin_schemas import ProfileUpdate as AdminProfileUpdate
-from app.schemas.profiles_schemas import ProfileResponse
 from app.schemas.profiles_schemas import (
-    FavoriteLocationCreate, FavoriteLocationResponse, FavoriteLocationsResponse,
+    FavoriteLocationCreate,
+    FavoriteLocationResponse,
+    FavoriteLocationsResponse,
+    ProfileResponse,
 )
 
 
@@ -79,13 +81,13 @@ def test_favorite_location_create_rejects_extra_fields():
 
 def test_favorite_location_response_accepts_orm_attributes():
     favorite_location = SimpleNamespace(
-        location_id=10, created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+        location_id=10, created_at=datetime(2024, 1, 1, tzinfo=UTC),
     )
     response = FavoriteLocationResponse.model_validate(
         favorite_location
     )
     assert response.location_id == 10
-    assert response.created_at == datetime(2024, 1, 1, tzinfo=timezone.utc)
+    assert response.created_at == datetime(2024, 1, 1, tzinfo=UTC)
 
 
 def test_favorite_locations_response_accepts_favorite_locations():
@@ -93,11 +95,11 @@ def test_favorite_locations_response_accepts_favorite_locations():
         location_ids=[
             FavoriteLocationResponse(
                 location_id=10,
-                created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+                created_at=datetime(2024, 1, 1, tzinfo=UTC),
             ),
             FavoriteLocationResponse(
                 location_id=20,
-                created_at=datetime(2024, 1, 2, tzinfo=timezone.utc),
+                created_at=datetime(2024, 1, 2, tzinfo=UTC),
             ),
         ]
     )

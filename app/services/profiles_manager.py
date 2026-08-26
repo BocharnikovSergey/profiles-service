@@ -3,6 +3,16 @@ from typing import TypeVar
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.clients.locations_client import check_location_exists
+from app.crud.favorite_locations_crud import (
+    delete_favorite_location as crud_delete_favorite_location,
+)
+from app.crud.favorite_locations_crud import (
+    get_favorite_location_ids as crud_get_favorite_location_ids,
+)
+from app.crud.favorite_locations_crud import (
+    get_or_create_favorite_location as crud_get_or_create_favorite_location,
+)
 from app.crud.profiles_crud import (
     admin_create_profile as crud_admin_create_profile,
 )
@@ -24,20 +34,11 @@ from app.crud.profiles_crud import (
 from app.crud.profiles_crud import (
     update_profile_by_id as crud_update_profile_by_id,
 )
-from app.crud.favorite_locations_crud import (
-    get_or_create_favorite_location as crud_get_or_create_favorite_location,
-    delete_favorite_location as crud_delete_favorite_location,
-    get_favorite_location_ids as crud_get_favorite_location_ids,
-)
 from app.crud.profiles_crud import (
     update_profile_by_user_id as crud_update_profile_by_user_id,
 )
 from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
-from app.schemas.profiles_schemas import (
-    ProfileCreate, ProfileUpdate
-)
-from app.clients.locations_client import check_location_exists
-
+from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
 
 T = TypeVar("T")
 

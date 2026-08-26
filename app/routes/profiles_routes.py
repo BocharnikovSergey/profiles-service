@@ -2,13 +2,16 @@ import logging
 
 from fastapi import APIRouter, Depends, Request, status
 
-from app.schemas.profiles_schemas import (
-    ProfileCreate, ProfileResponse, ProfileUpdate,
-    FavoriteLocationCreate, FavoriteLocationResponse, FavoriteLocationsResponse
-)
-from app.dependencies.auth import get_current_user_id, check_user_access
+from app.dependencies.auth import check_user_access, get_current_user_id
 from app.dependencies.profiles import get_profile_manager
-from app.schemas.profiles_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
+from app.schemas.profiles_schemas import (
+    FavoriteLocationCreate,
+    FavoriteLocationResponse,
+    FavoriteLocationsResponse,
+    ProfileCreate,
+    ProfileResponse,
+    ProfileUpdate,
+)
 from app.services.profiles_manager import ProfileManager
 
 logger = logging.getLogger(__name__)
@@ -106,7 +109,6 @@ async def delete_profile_by_id(
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     await manager.delete_profile_by_user_id(get_current_user_id(request))
-    return None
 
 
 @router.delete(
@@ -121,4 +123,3 @@ async def delete_favorite_location(
     await manager.delete_favorite_location(
         get_current_user_id(request), location_id,
     )
-    return None
