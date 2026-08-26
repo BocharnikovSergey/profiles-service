@@ -22,6 +22,7 @@ from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
 from app.schemas.profiles_schemas import (
     ProfileCreate, ProfileUpdate
 )
+from app.clients.locations_client import check_location_exists
 
 
 T = TypeVar("T")
@@ -75,6 +76,7 @@ class ProfileManager:
 
 
     async def add_favorite_location(self, user_id: int, location_id: int):
+        check_location_exists(location_id)
         favorite_location = await crud_get_or_create_favorite_location(
             self.db, user_id, location_id,
         )
