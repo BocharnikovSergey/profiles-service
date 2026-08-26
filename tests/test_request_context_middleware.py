@@ -1,6 +1,6 @@
 import base64
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from fastapi import status
@@ -23,8 +23,8 @@ class StubProfileManager:
             "city": None,
             "citizenship": None,
             "currency": None,
-            "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
-            "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+            "created_at": datetime(2024, 1, 1, tzinfo=UTC),
+            "updated_at": datetime(2024, 1, 1, tzinfo=UTC),
         }
 
     async def get_profile_by_user_id(self, user_id):
@@ -37,7 +37,7 @@ async def test_x_user_claims_header_is_restored_into_request_state(
     client, override_manager
 ):
     manager = override_manager(StubProfileManager())
-    claims = base64.urlsafe_b64encode(json.dumps({"sub": "7"}).encode("utf-8")).decode(
+    claims = base64.urlsafe_b64encode(json.dumps({"id": "7"}).encode("utf-8")).decode(
         "ascii"
     )
 

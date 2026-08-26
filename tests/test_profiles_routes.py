@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -39,8 +39,8 @@ class StubProfileManager:
             "city": None,
             "citizenship": None,
             "currency": None,
-            "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
-            "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+            "created_at": datetime(2024, 1, 1, tzinfo=UTC),
+            "updated_at": datetime(2024, 1, 1, tzinfo=UTC),
         }
 
     async def create_profile(self, user_id, payload):
@@ -57,7 +57,6 @@ class StubProfileManager:
 
     async def delete_profile_by_user_id(self, user_id):
         self.calls.append(("delete_profile_by_user_id", user_id))
-        return None
 
     async def get_favorite_location_ids(self, user_id):
         self.calls.append(("get_favorite_location_ids", user_id))

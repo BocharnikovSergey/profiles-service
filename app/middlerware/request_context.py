@@ -31,7 +31,7 @@ async def user_context_middleware(request: Request, call_next):
                 user = json.loads(raw.decode("utf-8"))
 
                 if not isinstance(user, dict):
-                    raise ValueError("X-User-Claims must be a JSON object")
+                    raise TypeError("X-User-Claims must be a JSON object")
                 request.state.user = user
             except Exception:
                 logger.warning("Invalid X-User-Claims header", exc_info=True)
@@ -41,7 +41,7 @@ async def user_context_middleware(request: Request, call_next):
                 )
             logger.info("Middleware user=%r", getattr(request.state, "user", None))
         elif user_id_header:
-            request.state.user = {"sub": user_id_header}
+            request.state.user = {"id": user_id_header}
     response = await call_next(request)
     logger.info("Middleware end")
     return response

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -27,8 +27,8 @@ def make_profile(**overrides):
         "city": None,
         "citizenship": None,
         "currency": None,
-        "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
-        "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+        "created_at": datetime(2024, 1, 1, tzinfo=UTC),
+        "updated_at": datetime(2024, 1, 1, tzinfo=UTC),
     }
     profile.update(overrides)
     return profile

@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from app.db.models import Profile
 from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
 

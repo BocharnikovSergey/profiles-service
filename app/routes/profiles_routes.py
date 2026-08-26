@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, status, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, status
 
 from app.schemas.profiles_schemas import (
     ProfileCreate, ProfileResponse, ProfileUpdate,
@@ -8,6 +8,7 @@ from app.schemas.profiles_schemas import (
 )
 from app.dependencies.auth import get_current_user_id, check_user_access
 from app.dependencies.profiles import get_profile_manager
+from app.schemas.profiles_schemas import ProfileCreate, ProfileResponse, ProfileUpdate
 from app.services.profiles_manager import ProfileManager
 
 logger = logging.getLogger(__name__)

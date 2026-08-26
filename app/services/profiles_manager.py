@@ -4,19 +4,33 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.profiles_crud import (
-    create_profile as crud_create_profile,
     admin_create_profile as crud_admin_create_profile,
-    delete_profile_by_user_id as crud_delete_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
+    create_profile as crud_create_profile,
+)
+from app.crud.profiles_crud import (
     delete_profile_by_id as crud_delete_profile_by_id,
-    get_profile_by_user_id as crud_get_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
+    delete_profile_by_user_id as crud_delete_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
     get_profile_by_id as crud_get_profile_by_id,
-    update_profile_by_user_id as crud_update_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
+    get_profile_by_user_id as crud_get_profile_by_user_id,
+)
+from app.crud.profiles_crud import (
     update_profile_by_id as crud_update_profile_by_id,
 )
 from app.crud.favorite_locations_crud import (
     get_or_create_favorite_location as crud_get_or_create_favorite_location,
     delete_favorite_location as crud_delete_favorite_location,
     get_favorite_location_ids as crud_get_favorite_location_ids,
+)
+from app.crud.profiles_crud import (
+    update_profile_by_user_id as crud_update_profile_by_user_id,
 )
 from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
 from app.schemas.profiles_schemas import (

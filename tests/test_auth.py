@@ -13,8 +13,8 @@ def make_request(user):
 @pytest.mark.parametrize(
     ("user", "expected_user_id"),
     [
-        ({"sub": 42}, 42),
-        ({"sub": "42"}, 42),
+        ({"id": 42}, 42),
+        ({"id": "42"}, 42),
     ],
 )
 def test_get_current_user_id_returns_integer_sub(user, expected_user_id):
@@ -27,9 +27,9 @@ def test_get_current_user_id_returns_integer_sub(user, expected_user_id):
         None,
         "not-a-dict",
         {},
-        {"sub": None},
-        {"sub": ""},
-        {"sub": "abc"},
+        {"id": None},
+        {"id": ""},
+        {"id": "abc"},
     ],
 )
 def test_get_current_user_id_rejects_invalid_user_payload(user):
