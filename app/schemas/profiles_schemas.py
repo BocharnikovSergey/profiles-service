@@ -39,3 +39,20 @@ class ProfileResponse(ProfileBase):
     role: str
     created_at: datetime
     updated_at: datetime
+
+
+class FavoriteLocationCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    location_id: int = Field(gt=0)
+
+
+class FavoriteLocationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    location_id: int
+    created_at: datetime
+
+class FavoriteLocationsResponse(BaseModel):
+
+    location_ids: list[FavoriteLocationResponse]

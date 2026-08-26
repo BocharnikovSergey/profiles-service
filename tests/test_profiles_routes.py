@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 from fastapi import status
@@ -57,6 +58,29 @@ class StubProfileManager:
     async def delete_profile_by_user_id(self, user_id):
         self.calls.append(("delete_profile_by_user_id", user_id))
 
+    async def get_favorite_location_ids(self, user_id):
+        self.calls.append(("get_favorite_location_ids", user_id))
+        return [
+            SimpleNamespace(
+                location_id=10,
+                created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+            ),
+            SimpleNamespace(
+                location_id=20,
+                created_at=datetime(2024, 1, 2, tzinfo=timezone.utc),
+            ),
+        ]
+
+    async def add_favorite_location(self, user_id, location_id):
+        self.calls.append(("add_favorite_location", user_id, location_id))
+        return SimpleNamespace(
+            location_id=location_id,
+            created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+        )
+
+    async def delete_favorite_location(self, user_id, location_id):
+        self.calls.append(("delete_favorite_location", user_id, location_id))
+
 
 @pytest.mark.asyncio
 async def test_create_profile_uses_current_user_id(
@@ -77,7 +101,7 @@ async def test_get_profile_by_id_returns_forbidden_for_another_user(
     client, override_manager, monkeypatch
 ):
     manager = override_manager(StubProfileManager())
-    monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
+    monkeypatch.setattr("app.dependencies.auth.get_current_user_id", lambda _: 7)
 
     response = await client.get("/api/profile/8")
 
@@ -128,3 +152,113 @@ async def test_delete_profile_by_id_returns_no_content_for_owner(
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert response.content == b""
     assert manager.calls == [("delete_profile_by_user_id", 7)]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("url", "patch_target"),
+    [
+        (
+            "/api/profile/me/favorite-locations",
+            "app.routes.profiles_routes.get_current_user_id",
+        ),
+        (
+            "/api/profile/7/favorite-locations",
+            "app.dependencies.auth.get_current_user_id",
+        ),
+    ],
+)
+async def test_get_favorite_locations(
+    client, override_manager, monkeypatch, url, patch_target
+):
+    manager = override_manager(StubProfileManager())
+    monkeypatch.setattr(patch_target,lambda _: 7)
+    response = await client.get(url)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "location_ids": [
+            {
+                "location_id": 10,
+                "created_at": "2024-01-01T00:00:00Z",
+            },
+            {
+                "location_id": 20,
+                "created_at": "2024-01-02T00:00:00Z",
+            },
+        ]
+    }
+    assert manager.calls == [
+        ("get_favorite_location_ids", 7),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_get_favorite_locations_by_user_id_returns_forbidden(
+    client, override_manager, monkeypatch,
+):
+    manager = override_manager(StubProfileManager())
+    monkeypatch.setattr(
+        "app.dependencies.auth.get_current_user_id",
+        lambda _: 7,
+    )
+    response = await client.get(
+        "/api/profile/8/favorite-locations",
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()["detail"] == "Forbidden"
+    assert manager.calls == []
+
+
+@pytest.mark.asyncio
+async def test_add_favorite_location(
+    client, override_manager, monkeypatch,
+):
+    manager = override_manager(StubProfileManager())
+    monkeypatch.setattr(
+        "app.routes.profiles_routes.get_current_user_id",
+        lambda _: 7,
+    )
+    response = await client.post(
+        "/api/profile/me/favorite-locations",
+        json={"location_id": 10},
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == {
+        "location_id": 10,
+        "created_at": "2024-01-01T00:00:00Z",
+    }
+    assert manager.calls == [
+        ("add_favorite_location", 7, 10),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_delete_favorite_location(
+    client, override_manager, monkeypatch,
+):
+    manager = override_manager(StubProfileManager())
+    monkeypatch.setattr(
+        "app.routes.profiles_routes.get_current_user_id",
+        lambda _: 7,
+    )
+    response = await client.delete(
+        "/api/profile/me/favorite-locations/10",
+    )
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.content == b""
+    assert manager.calls == [
+        ("delete_favorite_location", 7, 10),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_get_my_favorite_locations_unauthorized(
+    client, override_manager,
+):
+    manager = override_manager(StubProfileManager())
+    response = await client.get(
+        "/api/profile/me/favorite-locations",
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Unauthorized"
+    assert manager.calls == []
