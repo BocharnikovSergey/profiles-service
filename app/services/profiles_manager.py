@@ -89,43 +89,44 @@ class ProfileManager:
         deleted = await crud_delete_profile_by_id(self.db, profile_id)
         self._raise_not_found(deleted)
 
-
     async def add_favorite_location(self, user_id: int, location_id: int):
         check_location_exists(location_id)
         favorite_location = await crud_get_or_create_favorite_location(
-            self.db, user_id, location_id,
+            self.db,
+            user_id,
+            location_id,
         )
-        self._raise_not_found(favorite_location, detail='Not found')
+        self._raise_not_found(favorite_location, detail="Not found")
         return favorite_location
 
     async def get_favorite_location_ids(
-        self, user_id: int,
+        self,
+        user_id: int,
     ) -> list[int]:
         return await crud_get_favorite_location_ids(self.db, user_id)
 
     async def delete_favorite_location(
-        self, user_id: int, location_id: int,
+        self,
+        user_id: int,
+        location_id: int,
     ) -> None:
         await crud_delete_favorite_location(self.db, user_id, location_id)
 
-    def get_or_raise_not_found(
-        self, obj: T, detail: str = "Profile not found"
-    ) -> T:
+    def get_or_raise_not_found(self, obj: T, detail: str = "Profile not found") -> T:
         self._raise_not_found(obj, detail)
         return obj
 
     @staticmethod
-    def _raise_not_found(obj: T, detail: str="Profile not found") -> None:
+    def _raise_not_found(obj: T, detail: str = "Profile not found") -> None:
         if not obj:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=detail
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
     @staticmethod
     def _raise_conflict_if_exists(
-        existing_obj: T | None, detail: str ="Profile already exists"
+        existing_obj: T | None, detail: str = "Profile already exists"
     ) -> None:
         if existing_obj:
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail=detail,
+                status_code=status.HTTP_409_CONFLICT,
+                detail=detail,
             )

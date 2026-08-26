@@ -68,8 +68,7 @@ class FavoriteLocation(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "profile_id", "location_id",
-            name="uq_favorite_locations_profile_location"
+            "profile_id", "location_id", name="uq_favorite_locations_profile_location"
         ),
     )
 
@@ -78,5 +77,6 @@ class FavoriteLocation(Base):
         ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
+        DateTime(timezone=True), server_default=func.now()
+    )
     profile: Mapped[Profile] = relationship(back_populates="favorites")

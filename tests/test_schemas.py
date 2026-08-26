@@ -81,11 +81,10 @@ def test_favorite_location_create_rejects_extra_fields():
 
 def test_favorite_location_response_accepts_orm_attributes():
     favorite_location = SimpleNamespace(
-        location_id=10, created_at=datetime(2024, 1, 1, tzinfo=UTC),
+        location_id=10,
+        created_at=datetime(2024, 1, 1, tzinfo=UTC),
     )
-    response = FavoriteLocationResponse.model_validate(
-        favorite_location
-    )
+    response = FavoriteLocationResponse.model_validate(favorite_location)
     assert response.location_id == 10
     assert response.created_at == datetime(2024, 1, 1, tzinfo=UTC)
 

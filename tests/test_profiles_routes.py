@@ -172,7 +172,7 @@ async def test_get_favorite_locations(
     client, override_manager, monkeypatch, url, patch_target
 ):
     manager = override_manager(StubProfileManager())
-    monkeypatch.setattr(patch_target,lambda _: 7)
+    monkeypatch.setattr(patch_target, lambda _: 7)
     response = await client.get(url)
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
@@ -194,7 +194,9 @@ async def test_get_favorite_locations(
 
 @pytest.mark.asyncio
 async def test_get_favorite_locations_by_user_id_returns_forbidden(
-    client, override_manager, monkeypatch,
+    client,
+    override_manager,
+    monkeypatch,
 ):
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr(
@@ -211,7 +213,9 @@ async def test_get_favorite_locations_by_user_id_returns_forbidden(
 
 @pytest.mark.asyncio
 async def test_add_favorite_location(
-    client, override_manager, monkeypatch,
+    client,
+    override_manager,
+    monkeypatch,
 ):
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr(
@@ -234,7 +238,9 @@ async def test_add_favorite_location(
 
 @pytest.mark.asyncio
 async def test_delete_favorite_location(
-    client, override_manager, monkeypatch,
+    client,
+    override_manager,
+    monkeypatch,
 ):
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr(
@@ -253,7 +259,8 @@ async def test_delete_favorite_location(
 
 @pytest.mark.asyncio
 async def test_get_my_favorite_locations_unauthorized(
-    client, override_manager,
+    client,
+    override_manager,
 ):
     manager = override_manager(StubProfileManager())
     response = await client.get(

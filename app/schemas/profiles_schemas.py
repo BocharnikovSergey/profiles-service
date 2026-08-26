@@ -53,6 +53,6 @@ class FavoriteLocationResponse(BaseModel):
     location_id: int
     created_at: datetime
 
-class FavoriteLocationsResponse(BaseModel):
 
+class FavoriteLocationsResponse(BaseModel):
     location_ids: list[FavoriteLocationResponse]

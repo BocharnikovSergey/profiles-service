@@ -243,9 +243,16 @@ async def test_delete_profile_by_user_id_returns_none_on_success(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_add_favorite_location_returns_created_location(monkeypatch):
-    favorite_location = SimpleNamespace(profile_id=1,location_id=10,
+    favorite_location = SimpleNamespace(
+        profile_id=1,
+        location_id=10,
     )
-    async def fake_get_or_create_favorite_location(db, user_id, location_id,):
+
+    async def fake_get_or_create_favorite_location(
+        db,
+        user_id,
+        location_id,
+    ):
         assert user_id == 7
         assert location_id == 10
         return favorite_location
@@ -264,7 +271,11 @@ async def test_add_favorite_location_returns_created_location(monkeypatch):
 async def test_add_favorite_location_raises_not_found_when_location_missing(
     monkeypatch,
 ):
-    async def fake_get_or_create_favorite_location(db, user_id, location_id,):
+    async def fake_get_or_create_favorite_location(
+        db,
+        user_id,
+        location_id,
+    ):
         return None
 
     monkeypatch.setattr(

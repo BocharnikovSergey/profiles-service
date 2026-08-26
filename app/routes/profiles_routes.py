@@ -32,7 +32,7 @@ async def create_new_profile(
 @router.post(
     "/me/favorite-locations",
     status_code=status.HTTP_201_CREATED,
-    response_model=FavoriteLocationResponse
+    response_model=FavoriteLocationResponse,
 )
 async def add_favorite_location(
     payload: FavoriteLocationCreate,
@@ -54,7 +54,8 @@ async def get_my_profile(
 
 
 @router.get(
-    "/me/favorite-locations", response_model=FavoriteLocationsResponse,
+    "/me/favorite-locations",
+    response_model=FavoriteLocationsResponse,
 )
 async def get_favorite_locations(
     request: Request,
@@ -121,5 +122,6 @@ async def delete_favorite_location(
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     await manager.delete_favorite_location(
-        get_current_user_id(request), location_id,
+        get_current_user_id(request),
+        location_id,
     )
