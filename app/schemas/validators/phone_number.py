@@ -1,5 +1,5 @@
 import phonenumbers
-from phonenumbers import NumberParseException
+from phonenumbers import NumberParseException, PhoneNumberType
 
 from .constants import ALLOWED_REGIONS
 
