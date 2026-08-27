@@ -1,7 +1,5 @@
 import phonenumbers
-from phonenumbers import NumberParseException, PhoneNumberType
-
-from .constants import ALLOWED_REGIONS
+from phonenumbers import NumberParseException
 
 
 def normalize_phone_number(phone_number: str) -> str:
@@ -20,12 +18,6 @@ def normalize_phone_number(phone_number: str) -> str:
         raise ValueError("Invalid phone number")
     if not phonenumbers.is_valid_number(phone_parse):
         raise ValueError("Invalid phone number")
-    elif not ALLOWED_REGIONS.intersection(
-        phonenumbers.region_codes_for_country_code(
-            phone_parse.country_code
-        )
-    ):
-        raise ValueError("Phone number country is not supported")
     return phonenumbers.format_number(
         phone_parse, phonenumbers.PhoneNumberFormat.E164
         )

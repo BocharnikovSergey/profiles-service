@@ -239,3 +239,101 @@ async def test_delete_profile_by_user_id_returns_none_on_success(monkeypatch):
     result = await manager.delete_profile_by_user_id(7)
 
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_add_favorite_location_returns_created_location(monkeypatch):
+    favorite_location = SimpleNamespace(
+        profile_id=1,
+        location_id=10,
+    )
+
+    async def fake_get_or_create_favorite_location(
+        db,
+        user_id,
+        location_id,
+    ):
+        assert user_id == 7
+        assert location_id == 10
+        return favorite_location
+
+    monkeypatch.setattr(
+        "app.services.profiles_manager.crud_get_or_create_favorite_location",
+        fake_get_or_create_favorite_location,
+    )
+
+    manager = ProfileManager(db=object())
+    result = await manager.add_favorite_location(7, 10)
+    assert result is favorite_location
+
+
+@pytest.mark.asyncio
+async def test_add_favorite_location_raises_not_found_when_location_missing(
+    monkeypatch,
+):
+    async def fake_get_or_create_favorite_location(
+        db,
+        user_id,
+        location_id,
+    ):
+        return None
+
+    monkeypatch.setattr(
+        "app.services.profiles_manager.crud_get_or_create_favorite_location",
+        fake_get_or_create_favorite_location,
+    )
+
+    manager = ProfileManager(db=object())
+    with pytest.raises(HTTPException) as exc_info:
+        await manager.add_favorite_location(7, 10)
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Not found"
+
+
+@pytest.mark.asyncio
+async def test_get_favorite_location_ids_returns_location_ids(monkeypatch):
+    async def fake_get_favorite_location_ids(db, user_id):
+        assert user_id == 7
+        return [10, 20]
+
+    monkeypatch.setattr(
+        "app.services.profiles_manager.crud_get_favorite_location_ids",
+        fake_get_favorite_location_ids,
+    )
+    manager = ProfileManager(db=object())
+    result = await manager.get_favorite_location_ids(7)
+    assert result == [10, 20]
+
+
+@pytest.mark.asyncio
+async def test_get_favorite_location_ids_returns_empty_list_when_no_locations(
+    monkeypatch,
+):
+    async def fake_get_favorite_location_ids(db, user_id):
+        assert user_id == 7
+        return []
+
+    monkeypatch.setattr(
+        "app.services.profiles_manager.crud_get_favorite_location_ids",
+        fake_get_favorite_location_ids,
+    )
+
+    manager = ProfileManager(db=object())
+    result = await manager.get_favorite_location_ids(7)
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_delete_favorite_location_calls_crud(monkeypatch):
+    async def fake_delete_favorite_location(db, user_id, location_id):
+        assert user_id == 7
+        assert location_id == 10
+
+    monkeypatch.setattr(
+        "app.services.profiles_manager.crud_delete_favorite_location",
+        fake_delete_favorite_location,
+    )
+
+    manager = ProfileManager(db=object())
+    result = await manager.delete_favorite_location(7, 10)
+    assert result is None

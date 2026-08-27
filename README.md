@@ -1,3 +1,5 @@
+[![CI Dev](https://github.com/RideTrip-tour/profiles-service/actions/workflows/ci-dev.yml/badge.svg)](https://github.com/RideTrip-tour/profiles-service/actions/workflows/ci-dev.yml)
+
 # Profile Service
 
 Сервис управления профилями пользователей на `FastAPI` и `SQLAlchemy Async`.
