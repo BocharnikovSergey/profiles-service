@@ -90,7 +90,7 @@ class ProfileManager:
         self._raise_not_found(deleted)
 
     async def add_favorite_location(self, user_id: int, location_id: int):
-        check_location_exists(location_id)
+        await check_location_exists(location_id)
         favorite_location = await crud_get_or_create_favorite_location(
             self.db,
             user_id,

@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 
 
-def check_location_exists(location_id: int) -> None:
+async def check_location_exists(location_id: int) -> None:
     """
     Проверка существования локации.
 
