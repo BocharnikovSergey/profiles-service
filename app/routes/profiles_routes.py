@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, Request, status
 
 from app.dependencies.auth import check_user_access, get_current_user_id
-from app.dependencies.profiles import get_profile_manager
+from app.dependencies.profiles import get_profile_manager, get_current_profile
 from app.schemas.profiles_schemas import (
     FavoriteLocationCreate,
     FavoriteLocationResponse,
