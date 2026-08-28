@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from .validators.phone_number import normalize_phone_number
 
 
 class ProfileBase(BaseModel):
@@ -21,6 +23,13 @@ class ProfileBase(BaseModel):
     currency: str | None = None
     # Времено отключено по просьбе тестеров. До подключения бакета
     # avatar_url: Optional[str] = None
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, phone_number: str | None) -> str | None:
+        if phone_number is not None:
+            return normalize_phone_number(phone_number)
+        return None
 
 
 class ProfileCreate(ProfileBase):
