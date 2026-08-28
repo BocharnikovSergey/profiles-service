@@ -24,11 +24,11 @@ class ProfileBase(BaseModel):
     # Времено отключено по просьбе тестеров. До подключения бакета
     # avatar_url: Optional[str] = None
 
-    @field_validator('phone_number')
+    @field_validator("phone_number")
     @classmethod
     def validate_phone_number(cls, phone_number: str | None) -> str | None:
         if phone_number is not None:
-            return normalize_phone_number(phone_number) 
+            return normalize_phone_number(phone_number)
         return None
 
 

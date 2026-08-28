@@ -82,12 +82,10 @@ def test_admin_profile_update_rejects_user_id():
     [
         ("+7 (918) 999-99-99", "+79189999999"),
         ("+7 777 123 45 67", "+77771234567"),
-        ("+7 (918) 8888888", "+79188888888")
+        ("+7 (918) 8888888", "+79188888888"),
     ],
 )
-def test_profile_phone_number_is_normalized(
-    profile_schema, phone_number, expected
-):
+def test_profile_phone_number_is_normalized(profile_schema, phone_number, expected):
     schema, data = profile_schema
     profile = schema(**data, phone_number=phone_number)
     assert profile.phone_number == expected
@@ -95,7 +93,14 @@ def test_profile_phone_number_is_normalized(
 
 @pytest.mark.parametrize(
     "phone_number",
-    ["12345", "abcdef", "+799912345", "+799912345678901", "+7", "   "],
+    [
+        "12345",
+        "abcdef",
+        "+799912345",
+        "+799912345678901",
+        "+7",
+        "   ",
+    ],
 )
 def test_profile_rejects_invalid_phone_number(profile_schema, phone_number):
     schema, data = profile_schema

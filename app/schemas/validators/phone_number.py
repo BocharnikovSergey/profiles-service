@@ -18,6 +18,4 @@ def normalize_phone_number(phone_number: str) -> str:
         raise ValueError("Invalid phone number")
     if not phonenumbers.is_valid_number(phone_parse):
         raise ValueError("Invalid phone number")
-    return phonenumbers.format_number(
-        phone_parse, phonenumbers.PhoneNumberFormat.E164
-        )
+    return phonenumbers.format_number(phone_parse, phonenumbers.PhoneNumberFormat.E164)
