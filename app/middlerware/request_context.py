@@ -4,8 +4,7 @@ import logging
 
 from fastapi import HTTPException, Request, status
 
-from app.crud.profiles_crud import get_profile_id_by_user_id
-from app.db.database import AsyncSessionLocal
+from app.services.profile_cache import get_profile_id
 from app.utils.converters import convert_value_to_int
 
 logger = logging.getLogger(__name__)
@@ -43,20 +42,6 @@ def _get_user_from_headers(request: Request) -> dict | None:
     return None
 
 
-async def _get_profile_id(user_id: int) -> int:
-    async with AsyncSessionLocal() as session:
-        profile_id = await get_profile_id_by_user_id(
-            user_id=user_id,
-            db=session,
-        )
-    if profile_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized",
-        )
-    return profile_id
-
-
 async def user_context_middleware(request: Request, call_next):
     """
     Восстанавливает request.state.user из заголовков, которые проставляет gateway.
@@ -72,7 +57,10 @@ async def user_context_middleware(request: Request, call_next):
             user_id = convert_value_to_int(
                 request.state.user.get("id") or request.state.user.get("sub")
             )
-            request.state.user["profile_id"] = await _get_profile_id(user_id)
+            request.state.user["profile_id"] = await get_profile_id(
+                user_id=user_id,
+                redis_client=request.app.state.redis,
+            )
     response = await call_next(request)
     logger.info("Middleware end")
     return response

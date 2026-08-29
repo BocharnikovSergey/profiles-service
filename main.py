@@ -1,6 +1,7 @@
 import logging.config
 from contextlib import asynccontextmanager
 
+import redis.asyncio as redis
 from fastapi import FastAPI
 
 from app.middlerware.request_context import user_context_middleware
@@ -17,7 +18,9 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Service is starting up...")
+    app.state.redis = await redis.Redis.from_url(settings.redis_url)
     yield
+    await app.state.redis.aclose()
     logger.info("Service is shutting down...")
 
 
