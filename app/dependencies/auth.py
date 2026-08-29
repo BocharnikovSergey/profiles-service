@@ -2,10 +2,12 @@ import logging
 
 from fastapi import HTTPException, Request, status
 
+from app.utils.converters import convert_value_to_int
+
 logger = logging.getLogger(__name__)
 
 
-def get_current_id(request: Request, key: str) -> int:
+def _get_current_id_form_state(request: Request, key: str) -> int:
     user = getattr(request.state, "user", None)
     if not isinstance(user, dict):
         logger.warning(
@@ -16,30 +18,23 @@ def get_current_id(request: Request, key: str) -> int:
             detail="Unauthorized",
         )
 
-    id = user.get(key)
+    current_id = user.get(key)
     logger.info("ID пользователя %s", id)
-    if id in (None, ""):
+    if current_id in (None, ""):
         logger.warning(f"sub отсутствует в user_data. Type {type(user)}. data: {user}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unauthorized",
         )
-    try:
-        return int(id)
-    except (TypeError, ValueError) as exc:
-        logger.exception(f"Значение {id} не удалось преобразовать в int. data: {id}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized",
-        ) from exc
+    return convert_value_to_int(current_id)
 
 
 def get_current_user_id(request: Request) -> int:
-    return get_current_id(request, "id")
+    return _get_current_id_form_state(request, "id")
 
 
 def get_current_profile_id(request: Request) -> int:
-    return get_current_id(request, "profile_id")
+    return _get_current_id_form_state(request, "profile_id")
 
 
 def check_user_access(request: Request, user_id: int) -> int:

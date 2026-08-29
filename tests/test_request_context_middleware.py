@@ -34,9 +34,19 @@ class StubProfileManager:
 
 @pytest.mark.asyncio
 async def test_x_user_claims_header_is_restored_into_request_state(
-    client, override_manager
+    client, override_manager, monkeypatch
 ):
     manager = override_manager(StubProfileManager())
+
+    async def mock_get_profile_id(user_id: int) -> int:
+        assert user_id == 7
+        return 1
+
+    monkeypatch.setattr(
+        "app.middlerware.request_context._get_profile_id",
+        mock_get_profile_id,
+    )
+
     claims = base64.urlsafe_b64encode(json.dumps({"id": "7"}).encode("utf-8")).decode(
         "ascii"
     )
