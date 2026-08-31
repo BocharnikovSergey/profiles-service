@@ -50,6 +50,11 @@ async def _find_by_user_id(db: AsyncSession, user_id: int):
     return result.scalar_one_or_none()
 
 
+async def _find_id_by_user_id(db: AsyncSession, user_id: int):
+    result = await db.execute(select(Profile.id).where(Profile.user_id == user_id))
+    return result.scalar_one_or_none()
+
+
 async def create_profile(
     db: AsyncSession, user_id: int, profile_in: ProfileCreate
 ) -> Profile:
@@ -68,6 +73,10 @@ async def admin_create_profile(db: AsyncSession, profile_in: ProfileCreate) -> P
 
 async def get_profile_by_user_id(db: AsyncSession, user_id: int) -> Profile | None:
     return await _find_by_user_id(db, user_id)
+
+
+async def get_profile_id_by_user_id(db: AsyncSession, user_id: int) -> int | None:
+    return await _find_id_by_user_id(db, user_id)
 
 
 async def get_profile_by_id(db: AsyncSession, profile_id: int) -> Profile | None:

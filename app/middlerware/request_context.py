@@ -4,12 +4,43 @@ import logging
 
 from fastapi import HTTPException, Request, status
 
+from app.services.profile_cache import get_profile_id
+from app.utils.converters import convert_value_to_int
+from app.utils.validators import require_or_unauthorized
+
 logger = logging.getLogger(__name__)
 
 
 def _urlsafe_b64decode_padded(value: str) -> bytes:
     padded = value + "=" * (-len(value) % 4)
     return base64.urlsafe_b64decode(padded.encode("ascii"))
+
+
+def _get_user_from_claims(claims_header: str) -> dict:
+    try:
+        raw = _urlsafe_b64decode_padded(claims_header)
+        user = json.loads(raw.decode("utf-8"))
+
+        if not isinstance(user, dict):
+            raise TypeError("X-User-Claims must be a JSON object")
+        return user
+    except Exception:
+        logger.warning("Invalid X-User-Claims header", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+        )
+
+
+def _get_user_from_headers(request: Request) -> dict | None:
+    claims_header = request.headers.get("x-user-claims")
+    user_id_header = request.headers.get("x-user-id")
+
+    if claims_header:
+        return _get_user_from_claims(claims_header)
+    if user_id_header:
+        return {"id": user_id_header}
+    return None
 
 
 async def user_context_middleware(request: Request, call_next):
@@ -22,26 +53,19 @@ async def user_context_middleware(request: Request, call_next):
     """
     logger.info("Middleware start")
     if getattr(request.state, "user", None) is None:
-        claims_header = request.headers.get("x-user-claims")
-        user_id_header = request.headers.get("x-user-id")
-
-        if claims_header:
-            try:
-                raw = _urlsafe_b64decode_padded(claims_header)
-                user = json.loads(raw.decode("utf-8"))
-
-                if not isinstance(user, dict):
-                    raise TypeError("X-User-Claims must be a JSON object")
-                request.state.user = user
-            except Exception:
-                logger.warning("Invalid X-User-Claims header", exc_info=True)
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Unauthorized",
+        request.state.user = _get_user_from_headers(request)
+        if isinstance(request.state.user, dict):
+            user_id = require_or_unauthorized(
+                convert_value_to_int(
+                    request.state.user.get("id") or request.state.user.get("sub")
                 )
-            logger.info("Middleware user=%r", getattr(request.state, "user", None))
-        elif user_id_header:
-            request.state.user = {"id": user_id_header}
+            )
+            request.state.user["profile_id"] = require_or_unauthorized(
+                await get_profile_id(
+                    user_id=user_id,
+                    redis_client=request.app.state.redis,
+                )
+            )
     response = await call_next(request)
     logger.info("Middleware end")
     return response

@@ -17,9 +17,15 @@ from app.dependencies.profiles import get_profile_manager
 from main import create_app
 
 
+class StubRedis:
+    pass
+
+
 @pytest.fixture
 def app():
-    return create_app()
+    app = create_app()
+    app.state.redis = StubRedis()
+    return app
 
 
 @pytest_asyncio.fixture
@@ -43,3 +49,19 @@ def override_manager(app):
 
     yield _override
     app.dependency_overrides.clear()
+
+
+class MockRedis:
+    def __init__(self):
+        self.data = {}
+
+    async def get(self, key):
+        return self.data.get(key)
+
+    async def set(self, key, value, ex=None):
+        self.data[key] = value
+
+
+@pytest.fixture
+def redis_client():
+    return MockRedis()
