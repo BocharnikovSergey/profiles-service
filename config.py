@@ -32,7 +32,6 @@ class Settings(BaseSettings):
     # =========================
     redis_url: str = "redis://redis:6379"
     redis_ttl: int = 300  # время жизни кеша по умолчанию
-    rate_limit: int = 100  # запросов в минуту
 
     # =========================
     # Config

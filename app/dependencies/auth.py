@@ -3,6 +3,7 @@ import logging
 from fastapi import HTTPException, Request, status
 
 from app.utils.converters import convert_value_to_int
+from app.utils.validators import require_or_unauthorized
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ def _get_current_id_form_state(request: Request, key: str) -> int:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unauthorized",
         )
-    return convert_value_to_int(current_id)
+    return require_or_unauthorized(convert_value_to_int(current_id))
 
 
 def get_current_user_id(request: Request) -> int:

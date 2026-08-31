@@ -6,6 +6,7 @@ from fastapi import HTTPException, Request, status
 
 from app.services.profile_cache import get_profile_id
 from app.utils.converters import convert_value_to_int
+from app.utils.validators import require_or_unauthorized
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +55,16 @@ async def user_context_middleware(request: Request, call_next):
     if getattr(request.state, "user", None) is None:
         request.state.user = _get_user_from_headers(request)
         if isinstance(request.state.user, dict):
-            user_id = convert_value_to_int(
-                request.state.user.get("id") or request.state.user.get("sub")
+            user_id = require_or_unauthorized(
+                convert_value_to_int(
+                    request.state.user.get("id") or request.state.user.get("sub")
+                )
             )
-            request.state.user["profile_id"] = await get_profile_id(
-                user_id=user_id,
-                redis_client=request.app.state.redis,
+            request.state.user["profile_id"] = require_or_unauthorized(
+                await get_profile_id(
+                    user_id=user_id,
+                    redis_client=request.app.state.redis,
+                )
             )
     response = await call_next(request)
     logger.info("Middleware end")

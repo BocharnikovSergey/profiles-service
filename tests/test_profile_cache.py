@@ -1,5 +1,4 @@
 import pytest
-from fastapi import HTTPException, status
 
 from app.services.profile_cache import get_profile_id
 
@@ -9,7 +8,7 @@ async def test_get_profile_id_returns_cached_value(
     redis_client,
     monkeypatch,
 ):
-    redis_client.data["profile_id:7"] = "1"
+    redis_client.data["profile_service:profile_id:7"] = "1"
 
     async def mock_get_profile_id_by_user_id(*args, **kwargs):
         pytest.fail("Database should not be called")
@@ -47,7 +46,7 @@ async def test_get_profile_id_loads_from_db_and_caches(
     )
 
     assert result == 1
-    assert redis_client.data["profile_id:7"] == 1
+    assert redis_client.data["profile_service:profile_id:7"] == 1
 
 
 @pytest.mark.asyncio
@@ -63,10 +62,9 @@ async def test_get_profile_id_raises_unauthorized_when_profile_not_found(
         mock_get_profile_id_by_user_id,
     )
 
-    with pytest.raises(HTTPException) as exc_info:
-        await get_profile_id(
-            user_id=7,
-            redis_client=redis_client,
-        )
+    result = await get_profile_id(
+        user_id=7,
+        redis_client=redis_client,
+    )
 
-    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert result is None
