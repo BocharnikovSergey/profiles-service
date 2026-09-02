@@ -8,7 +8,7 @@ from app.crud.favorite_locations_crud import (
     delete_favorite_location as crud_delete_favorite_location,
 )
 from app.crud.favorite_locations_crud import (
-    get_favorite_location_ids as crud_get_favorite_location_ids,
+    get_favorite_location as crud_get_favorite_location,
 )
 from app.crud.favorite_locations_crud import (
     get_or_create_favorite_location as crud_get_or_create_favorite_location,
@@ -37,9 +37,9 @@ from app.crud.profiles_crud import (
 from app.crud.profiles_crud import (
     update_profile_by_user_id as crud_update_profile_by_user_id,
 )
+from app.db.models import FavoriteLocation
 from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
 from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
-from app.db.models import FavoriteLocation
 
 T = TypeVar("T")
 
@@ -100,11 +100,11 @@ class ProfileManager:
         self._raise_not_found(favorite_location, detail="Not found")
         return favorite_location
 
-    async def get_favorite_location_ids(
+    async def get_favorite_location(
         self,
         user_id: int,
     ) -> list[FavoriteLocation]:
-        return await crud_get_favorite_location_ids(self.db, user_id)
+        return await crud_get_favorite_location(self.db, user_id)
 
     async def delete_favorite_location(
         self,

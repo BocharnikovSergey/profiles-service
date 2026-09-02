@@ -291,35 +291,53 @@ async def test_add_favorite_location_raises_not_found_when_location_missing(
 
 
 @pytest.mark.asyncio
-async def test_get_favorite_location_ids_returns_location_ids(monkeypatch):
-    async def fake_get_favorite_location_ids(db, user_id):
+async def test_get_favorite_location_returns_location(monkeypatch):
+    async def fake_get_favorite_location(db, user_id):
         assert user_id == 7
-        return [10, 20]
+        return  [
+            {
+                "location_id": 10,
+                "created_at": "2024-01-01T00:00:00Z",
+            },
+            {
+                "location_id": 20,
+                "created_at": "2024-01-02T00:00:00Z",
+            },
+        ]
 
     monkeypatch.setattr(
-        "app.services.profiles_manager.crud_get_favorite_location_ids",
-        fake_get_favorite_location_ids,
+        "app.services.profiles_manager.crud_get_favorite_location",
+        fake_get_favorite_location,
     )
     manager = ProfileManager(db=object())
-    result = await manager.get_favorite_location_ids(7)
-    assert result == [10, 20]
+    result = await manager.get_favorite_location(7)
+    assert result ==  [
+        {
+            "location_id": 10,
+            "created_at": "2024-01-01T00:00:00Z",
+        },
+        {
+            "location_id": 20,
+            "created_at": "2024-01-02T00:00:00Z",
+        },
+    ]
 
 
 @pytest.mark.asyncio
-async def test_get_favorite_location_ids_returns_empty_list_when_no_locations(
+async def test_get_favorite_location_returns_empty_list_when_no_locations(
     monkeypatch,
 ):
-    async def fake_get_favorite_location_ids(db, user_id):
+    async def fake_get_favorite_location(db, user_id):
         assert user_id == 7
         return []
 
     monkeypatch.setattr(
-        "app.services.profiles_manager.crud_get_favorite_location_ids",
-        fake_get_favorite_location_ids,
+        "app.services.profiles_manager.crud_get_favorite_location",
+        fake_get_favorite_location,
     )
 
     manager = ProfileManager(db=object())
-    result = await manager.get_favorite_location_ids(7)
+    result = await manager.get_favorite_location(7)
     assert result == []
 
 
