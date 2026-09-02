@@ -4,7 +4,6 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .validators.phone_number import normalize_phone_number
 
-
 MAX_LEN_ABOUT_ME = 300
 
 
