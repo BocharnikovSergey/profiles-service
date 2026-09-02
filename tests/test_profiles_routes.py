@@ -289,3 +289,22 @@ async def test_get_my_favorite_locations_unauthorized(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Unauthorized"
     assert manager.calls == []
+
+
+@pytest.mark.asyncio
+async def test_update_my_profile_returns_422_for_too_long_about_me(
+    client, override_manager, monkeypatch
+):
+    manager = override_manager(StubProfileManager())
+    monkeypatch.setattr(
+        "app.routes.profiles_routes.get_current_user_id",
+        lambda _: 7,
+    )
+
+    response = await client.patch(
+        "/api/profile/me",
+        json={"about_me": "A" * 301},
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert manager.calls == []

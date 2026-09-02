@@ -212,3 +212,23 @@ def test_profile_rejects_invalid_name(profile_schema, field, name):
 
     with pytest.raises(ValidationError):
         schema(**{**data, field: name})
+
+
+@pytest.mark.parametrize(
+    ("about_me", "is_valid"),
+    [
+        ("О себе", True),
+        ("А" * 300, True),
+        (None, True),
+        ("А" * 301, False),
+    ],
+)
+def test_profile_about_me_length(profile_schema, about_me, is_valid):
+    schema, data = profile_schema
+    payload = {**data, "about_me": about_me}
+    if is_valid:
+        profile = schema(**payload)
+        assert profile.about_me == about_me
+    else:
+        with pytest.raises(ValidationError):
+            schema(**payload)

@@ -7,6 +7,7 @@ from .validators.phone_number import normalize_phone_number
 MIN_LEN_NAME = 2
 MAX_LEN_NAME = 15
 PATTERN_NAME = r"^[A-Za-zА-Яа-яЁё]+(?:[ -][A-Za-zА-Яа-яЁё]+)?$"
+MAX_LEN_ABOUT_ME = 300
 
 
 class ProfileBase(BaseModel):
@@ -26,7 +27,11 @@ class ProfileBase(BaseModel):
     )
     phone_number: str | None = None
     age: int | None = None
-    about_me: str | None = None
+    about_me: str | None = Field(
+        default=None,
+        max_length=MAX_LEN_ABOUT_ME,
+        description="Произвольная информация о себе.",
+    )
     activities: list[str] = Field(
         default_factory=list,
         description="External activity identifiers from activities service",
