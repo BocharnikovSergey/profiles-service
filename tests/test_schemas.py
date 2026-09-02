@@ -163,3 +163,23 @@ def test_favorite_locations_response_accepts_favorite_locations():
 def test_favorite_locations_response_accepts_empty_list():
     response = FavoriteLocationsResponse(location_ids=[])
     assert response.location_ids == []
+
+
+@pytest.mark.parametrize(
+    ("about_me", "is_valid"),
+    [
+        ("О себе", True),
+        ("А" * 300, True),
+        (None, True),
+        ("А" * 301, False),
+    ],
+)
+def test_profile_about_me_length(profile_schema, about_me, is_valid):
+    schema, data = profile_schema
+    payload = {**data, "about_me": about_me}
+    if is_valid:
+        profile = schema(**payload)
+        assert profile.about_me == about_me
+    else:
+        with pytest.raises(ValidationError):
+            schema(**payload)

@@ -5,6 +5,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from .validators.phone_number import normalize_phone_number
 
 
+MAX_LEN_ABOUT_ME = 300
+
+
 class ProfileBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -12,7 +15,11 @@ class ProfileBase(BaseModel):
     last_name: str | None = None
     phone_number: str | None = None
     age: int | None = None
-    about_me: str | None = None
+    about_me: str | None = Field(
+        default=None,
+        max_length=MAX_LEN_ABOUT_ME,
+        description="Произвольная информация о себе.",
+    )
     activities: list[str] = Field(
         default_factory=list,
         description="External activity identifiers from activities service",
