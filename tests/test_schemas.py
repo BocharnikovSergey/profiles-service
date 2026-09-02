@@ -12,6 +12,7 @@ from app.schemas.profiles_schemas import (
     FavoriteLocationsResponse,
     ProfileResponse,
 )
+from tests.conftest import INVALID_PROFILE_FIELDS
 
 
 @pytest.fixture(
@@ -163,3 +164,100 @@ def test_favorite_locations_response_accepts_favorite_locations():
 def test_favorite_locations_response_accepts_empty_list():
     response = FavoriteLocationsResponse(location_ids=[])
     assert response.location_ids == []
+
+
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "Anna",
+        "Anna Maria",
+        "Anna-Maria",
+        "Анна",
+        "Анна Мария",
+        "Анна-Мария",
+        "A-B",
+        "A B",
+        "А-Б",
+        "А Б",
+        "Jo",
+        "Ли",
+        "Александрийский",
+        "Анна-Екатерина",
+    ],
+)
+def test_profile_accepts_valid_name(profile_schema, field, name):
+    schema, data = profile_schema
+    profile = schema(**{**data, field: name})
+    assert getattr(profile, field) == name
+
+
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "A",
+        "A" * 16,
+        "А" * 16,
+        "Anna123",
+        "Anna_",
+        "Анна--Мария",
+        "Анна  Мария",
+        "-A",
+        "A-",
+        "",
+    ],
+)
+def test_profile_rejects_invalid_name(profile_schema, field, name):
+    schema, data = profile_schema
+
+    with pytest.raises(ValidationError):
+        schema(**{**data, field: name})
+
+
+@pytest.mark.parametrize("field,value", INVALID_PROFILE_FIELDS)
+def test_profile_fields_length_validation(profile_schema, field, value):
+    schema, data = profile_schema
+    with pytest.raises(ValidationError):
+        schema(**{**data, field: value})
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("about_me", "О себе"),
+        ("activities", ["A"]),
+        ("country", "AB"),
+        ("country", "A" * 25),
+        ("city", "AB"),
+        ("city", "A" * 25),
+        ("citizenship", "AB"),
+        ("citizenship", "A" * 15),
+        ("currency", "RUB"),
+    ],
+)
+def test_profile_fields_accept_valid_length(profile_schema, field, value):
+    schema, data = profile_schema
+    profile = schema(**{**data, field: value})
+
+    assert getattr(profile, field) == value
+
+
+@pytest.mark.parametrize(
+    "field, expected",
+    [
+        ("first_name", None),
+        ("last_name", None),
+        ("about_me", None),
+        ("phone_number", None),
+        ("country", None),
+        ("city", None),
+        ("citizenship", None),
+        ("currency", None),
+        ("activities", []),
+    ],
+)
+def test_profile_fields_have_default_values(profile_schema, field, expected):
+    schema, data = profile_schema
+    profile = schema(**{**data, field: expected})
+    assert getattr(profile, field) == expected

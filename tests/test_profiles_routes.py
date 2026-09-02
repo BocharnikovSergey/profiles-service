@@ -4,6 +4,8 @@ from types import SimpleNamespace
 import pytest
 from fastapi import status
 
+from tests.conftest import INVALID_PROFILE_FIELDS
+
 
 def expected_payload(**overrides):
     payload = {
@@ -125,19 +127,39 @@ async def test_get_my_profile_uses_current_user_id(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
 async def test_update_my_profile_uses_current_user_id(
-    client, override_manager, monkeypatch
+    client, override_manager, monkeypatch, field
 ):
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.patch("/api/profile/me", json={"first_name": "Updated"})
+    response = await client.patch("/api/profile/me", json={field: "Updated"})
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["first_name"] == "Updated"
+    assert response.json()[field] == "Updated"
     assert manager.calls == [
-        ("update_profile_by_user_id", 7, expected_payload(first_name="Updated"))
+        ("update_profile_by_user_id", 7, expected_payload(**{field: "Updated"}))
     ]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
+async def test_update_my_profile_returns_422_for_invalid_name(
+    client, override_manager, monkeypatch, field
+):
+    manager = override_manager(StubProfileManager())
+    monkeypatch.setattr(
+        "app.routes.profiles_routes.get_current_user_id",
+        lambda _: 7,
+    )
+    response = await client.patch(
+        "/api/profile/me",
+        json={field: "Ann123"},
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert manager.calls == []
 
 
 @pytest.mark.asyncio
@@ -268,4 +290,25 @@ async def test_get_my_favorite_locations_unauthorized(
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Unauthorized"
+    assert manager.calls == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("field, value", INVALID_PROFILE_FIELDS)
+async def test_update_my_profile_returns_422_for_too_long_field(
+    client, override_manager, monkeypatch, field, value
+):
+    manager = override_manager(StubProfileManager())
+
+    monkeypatch.setattr(
+        "app.routes.profiles_routes.get_current_user_id",
+        lambda _: 7,
+    )
+
+    response = await client.patch(
+        "/api/profile/me",
+        json={field: value},
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     assert manager.calls == []
