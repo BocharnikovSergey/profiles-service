@@ -49,7 +49,9 @@ async def get_or_create_favorite_location(
     return favorite_location.scalar_one_or_none()
 
 
-async def get_favorite_location(db: AsyncSession, user_id: int) -> list[FavoriteLocation]:
+async def get_favorite_location(
+    db: AsyncSession, user_id: int
+) -> list[FavoriteLocation]:
     return await _find_favorite_location(db, user_id)
 
 

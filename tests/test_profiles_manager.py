@@ -294,7 +294,7 @@ async def test_add_favorite_location_raises_not_found_when_location_missing(
 async def test_get_favorite_location_returns_location(monkeypatch):
     async def fake_get_favorite_location(db, user_id):
         assert user_id == 7
-        return  [
+        return [
             {
                 "location_id": 10,
                 "created_at": "2024-01-01T00:00:00Z",
@@ -311,7 +311,7 @@ async def test_get_favorite_location_returns_location(monkeypatch):
     )
     manager = ProfileManager(db=object())
     result = await manager.get_favorite_location(7)
-    assert result ==  [
+    assert result == [
         {
             "location_id": 10,
             "created_at": "2024-01-01T00:00:00Z",
