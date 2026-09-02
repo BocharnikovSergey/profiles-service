@@ -163,3 +163,52 @@ def test_favorite_locations_response_accepts_favorite_locations():
 def test_favorite_locations_response_accepts_empty_list():
     response = FavoriteLocationsResponse(location_ids=[])
     assert response.location_ids == []
+
+
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "Anna",
+        "Anna Maria",
+        "Anna-Maria",
+        "Анна",
+        "Анна Мария",
+        "Анна-Мария",
+        "A-B",
+        "A B",
+        "А-Б",
+        "А Б",
+        "Jo",
+        "Ли",
+        "Александрийский",
+        "Анна-Екатерина",
+    ],
+)
+def test_profile_accepts_valid_name(profile_schema, field, name):
+    schema, data = profile_schema
+    profile = schema(**{**data, field: name})
+    assert getattr(profile, field) == name
+
+
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "A",
+        "A" * 16,
+        "А" * 16,
+        "Anna123",
+        "Anna_",
+        "Анна--Мария",
+        "Анна  Мария",
+        "-A",
+        "A-",
+        "",
+    ],
+)
+def test_profile_rejects_invalid_name(profile_schema, field, name):
+    schema, data = profile_schema
+
+    with pytest.raises(ValidationError):
+        schema(**{**data, field: name})

@@ -4,12 +4,26 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .validators.phone_number import normalize_phone_number
 
+MIN_LEN_NAME = 2
+MAX_LEN_NAME = 15
+PATTERN_NAME = r"^[A-Za-zА-Яа-яЁё]+(?:[ -][A-Za-zА-Яа-яЁё]+)?$"
+
 
 class ProfileBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    first_name: str | None = None
-    last_name: str | None = None
+    first_name: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=15,
+        pattern=PATTERN_NAME,
+    )
+    last_name: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=15,
+        pattern=PATTERN_NAME,
+    )
     phone_number: str | None = None
     age: int | None = None
     about_me: str | None = None
