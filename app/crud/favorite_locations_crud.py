@@ -5,14 +5,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import FavoriteLocation, Profile
 
 
-async def _find_favorite_location_ids(
+async def _find_favorite_location(
     db: AsyncSession,
     user_id: int,
-) -> list[int]:
+) -> list[FavoriteLocation]:
     return list(
         (
             await db.execute(
-                select(FavoriteLocation.location_id)
+                select(FavoriteLocation)
                 .join(Profile, Profile.id == FavoriteLocation.profile_id)
                 .where(Profile.user_id == user_id)
                 .order_by(FavoriteLocation.created_at)
@@ -49,8 +49,8 @@ async def get_or_create_favorite_location(
     return favorite_location.scalar_one_or_none()
 
 
-async def get_favorite_location_ids(db: AsyncSession, user_id: int) -> list[int]:
-    return await _find_favorite_location_ids(db, user_id)
+async def get_favorite_location_ids(db: AsyncSession, user_id: int) -> list[FavoriteLocation]:
+    return await _find_favorite_location(db, user_id)
 
 
 async def delete_favorite_location(

@@ -39,6 +39,7 @@ from app.crud.profiles_crud import (
 )
 from app.schemas.admin_schemas import ProfileCreate as AdminProfileCreate
 from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
+from app.db.models import FavoriteLocation
 
 T = TypeVar("T")
 
@@ -102,7 +103,7 @@ class ProfileManager:
     async def get_favorite_location_ids(
         self,
         user_id: int,
-    ) -> list[int]:
+    ) -> list[FavoriteLocation]:
         return await crud_get_favorite_location_ids(self.db, user_id)
 
     async def delete_favorite_location(
