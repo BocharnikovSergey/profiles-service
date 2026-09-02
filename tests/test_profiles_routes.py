@@ -58,8 +58,8 @@ class StubProfileManager:
     async def delete_profile_by_user_id(self, user_id):
         self.calls.append(("delete_profile_by_user_id", user_id))
 
-    async def get_favorite_location_ids(self, user_id):
-        self.calls.append(("get_favorite_location_ids", user_id))
+    async def get_favorite_location(self, user_id):
+        self.calls.append(("get_favorite_location", user_id))
         return [
             SimpleNamespace(
                 location_id=10,
@@ -188,7 +188,7 @@ async def test_get_favorite_locations(
         ]
     }
     assert manager.calls == [
-        ("get_favorite_location_ids", 7),
+        ("get_favorite_location", 7),
     ]
 
 

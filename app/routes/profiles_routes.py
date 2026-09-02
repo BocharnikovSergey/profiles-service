@@ -62,9 +62,7 @@ async def get_favorite_locations(
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     return FavoriteLocationsResponse(
-        location_ids=await manager.get_favorite_location_ids(
-            get_current_user_id(request)
-        )
+        location_ids=await manager.get_favorite_location(get_current_user_id(request))
     )
 
 
@@ -79,7 +77,7 @@ async def get_favorite_locations_by_user_id(
 ):
     check_user_access(request, user_id)
     return FavoriteLocationsResponse(
-        location_ids=await manager.get_favorite_location_ids(user_id)
+        location_ids=await manager.get_favorite_location(user_id)
     )
 
 
