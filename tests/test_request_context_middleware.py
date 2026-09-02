@@ -59,3 +59,38 @@ async def test_x_user_claims_header_is_restored_into_request_state(
 
     assert response.status_code == status.HTTP_200_OK
     assert manager.calls == [("get_profile_by_user_id", 7)]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("claims_data", "expected_detail"),
+    [
+        ({}, "Unauthorized"),
+        ({"id": "7"}, "Profile not found"),
+    ],
+)
+async def test_x_user_claims_header_returns_401(
+    client,
+    monkeypatch,
+    claims_data,
+    expected_detail,
+):
+    async def mock_get_profile_id(user_id: int, redis_client: Any) -> int | None:
+        assert user_id == 7
+        return None
+
+    monkeypatch.setattr(
+        "app.middlerware.request_context.get_profile_id",
+        mock_get_profile_id,
+    )
+
+    claims = base64.urlsafe_b64encode(json.dumps(claims_data).encode("utf-8")).decode(
+        "ascii"
+    )
+
+    response = await client.get(
+        "/api/profile/me",
+        headers={"X-User-Claims": claims},
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {"detail": expected_detail}
