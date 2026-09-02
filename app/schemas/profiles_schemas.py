@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pycountry
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .validators.phone_number import normalize_phone_number
@@ -8,6 +9,16 @@ MIN_LEN_NAME = 2
 MAX_LEN_NAME = 15
 PATTERN_NAME = r"^[A-Za-zА-Яа-яЁё]+(?:[ -][A-Za-zА-Яа-яЁё]+)?$"
 MAX_LEN_ABOUT_ME = 300
+MAX_LEN_ACTIVITIES = 25
+MIN_LEN_COUNTRY = 2
+MAX_LEN_COUNTRY = 25
+MIN_LEN_CITY = 2
+MAX_LEN_CITY = 25
+PATTERN_CITY = r"^[A-Za-zА-Яа-яЁё]+(?:[ -][A-Za-zА-Яа-яЁё]+)+$"
+MIN_LEN_CITIZENSHIP = 2
+MAX_LEN_CITIZENSHIP = 15
+MAX_LEN_CURRENCY = 3
+MIN_LEN_CURRENCY = MAX_LEN_CURRENCY
 
 
 class ProfileBase(BaseModel):
@@ -34,12 +45,21 @@ class ProfileBase(BaseModel):
     )
     activities: list[str] = Field(
         default_factory=list,
+        max_length=MAX_LEN_ACTIVITIES,
         description="External activity identifiers from activities service",
     )
-    country: str | None = None
-    city: str | None = None
-    citizenship: str | None = None
-    currency: str | None = None
+    country: str | None = Field(
+        default=None, min_length=MIN_LEN_COUNTRY, max_length=MAX_LEN_COUNTRY
+    )
+    city: str | None = Field(
+        default=None, min_length=MIN_LEN_CITY, max_length=MAX_LEN_CITY
+    )
+    citizenship: str | None = Field(
+        default=None, min_length=MIN_LEN_CITIZENSHIP, max_length=MAX_LEN_CITIZENSHIP
+    )
+    currency: str | None = Field(
+        default=None, min_length=MIN_LEN_CURRENCY, max_length=MAX_LEN_CURRENCY
+    )
     # Времено отключено по просьбе тестеров. До подключения бакета
     # avatar_url: Optional[str] = None
 
@@ -49,6 +69,15 @@ class ProfileBase(BaseModel):
         if phone_number is not None:
             return normalize_phone_number(phone_number)
         return None
+
+    @field_validator("currency")
+    @classmethod
+    def validate_currency(cls, value: str | None) -> str | None:
+        if value is not None:
+            value = value.upper()
+            if not pycountry.currencies.get(alpha_3=value):
+                raise ValueError("Invalid currency code")
+        return value
 
 
 class ProfileCreate(ProfileBase):

@@ -16,6 +16,19 @@ os.environ["DEBUG"] = "false"
 from app.dependencies.profiles import get_profile_manager
 from main import create_app
 
+INVALID_PROFILE_FIELDS = [
+    ("about_me", "A" * 301),
+    ("activities", ["A"] * 26),
+    ("country", "A"),
+    ("country", "A" * 26),
+    ("city", "A"),
+    ("city", "A" * 26),
+    ("citizenship", "A"),
+    ("citizenship", "A" * 16),
+    ("currency", "RU"),
+    ("currency", "RUBB"),
+]
+
 
 class StubRedis:
     pass

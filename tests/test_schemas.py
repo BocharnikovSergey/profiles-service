@@ -12,6 +12,7 @@ from app.schemas.profiles_schemas import (
     FavoriteLocationsResponse,
     ProfileResponse,
 )
+from tests.conftest import INVALID_PROFILE_FIELDS
 
 
 @pytest.fixture(
@@ -214,21 +215,49 @@ def test_profile_rejects_invalid_name(profile_schema, field, name):
         schema(**{**data, field: name})
 
 
+@pytest.mark.parametrize("field,value", INVALID_PROFILE_FIELDS)
+def test_profile_fields_length_validation(profile_schema, field, value):
+    schema, data = profile_schema
+    with pytest.raises(ValidationError):
+        schema(**{**data, field: value})
+
+
 @pytest.mark.parametrize(
-    ("about_me", "is_valid"),
+    "field,value",
     [
-        ("О себе", True),
-        ("А" * 300, True),
-        (None, True),
-        ("А" * 301, False),
+        ("about_me", "О себе"),
+        ("activities", ["A"]),
+        ("country", "AB"),
+        ("country", "A" * 25),
+        ("city", "AB"),
+        ("city", "A" * 25),
+        ("citizenship", "AB"),
+        ("citizenship", "A" * 15),
+        ("currency", "RUB"),
     ],
 )
-def test_profile_about_me_length(profile_schema, about_me, is_valid):
+def test_profile_fields_accept_valid_length(profile_schema, field, value):
     schema, data = profile_schema
-    payload = {**data, "about_me": about_me}
-    if is_valid:
-        profile = schema(**payload)
-        assert profile.about_me == about_me
-    else:
-        with pytest.raises(ValidationError):
-            schema(**payload)
+    profile = schema(**{**data, field: value})
+
+    assert getattr(profile, field) == value
+
+
+@pytest.mark.parametrize(
+    "field, expected",
+    [
+        ("first_name", None),
+        ("last_name", None),
+        ("about_me", None),
+        ("phone_number", None),
+        ("country", None),
+        ("city", None),
+        ("citizenship", None),
+        ("currency", None),
+        ("activities", []),
+    ],
+)
+def test_profile_fields_have_default_values(profile_schema, field, expected):
+    schema, data = profile_schema
+    profile = schema(**{**data, field: expected})
+    assert getattr(profile, field) == expected
