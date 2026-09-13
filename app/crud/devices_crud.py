@@ -33,14 +33,12 @@ async def _create_device(
 ) -> ProfileDevice:
     db.add(device)
     await db.commit()
-    await db.refresh(device)
     return device
 
 
 async def _update_last_seen(db: AsyncSession, device: ProfileDevice) -> ProfileDevice:
     device.last_seen_at = datetime.now(UTC)
     await db.commit()
-    await db.refresh(device)
     return device
 
 
