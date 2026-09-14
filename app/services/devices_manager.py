@@ -42,8 +42,8 @@ class DeviceManager:
         операцию с базой данных.
         """
         key = self._get_cache_key(profile_id, device_id)
-        cached_device_flag = await self.redis_client.get(key)
-        if cached_device_flag is None:
+        cached_device_seen = await self.redis_client.get(key)
+        if cached_device_seen is None:
             logger.debug(
                 "Device cache miss: profile_id=%s device_id=%s",
                 profile_id,

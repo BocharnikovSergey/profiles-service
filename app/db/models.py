@@ -102,7 +102,7 @@ class ProfileDevice(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     last_seen_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now()
     )
     profile: Mapped[Profile] = relationship(back_populates="devices")
 
