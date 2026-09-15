@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import UTC, date, datetime
 
 import pycountry
+from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .validators.phone_number import normalize_phone_number
@@ -8,13 +9,13 @@ from .validators.phone_number import normalize_phone_number
 MIN_LEN_NAME = 2
 MAX_LEN_NAME = 15
 PATTERN_NAME = r"^[A-Za-zА-Яа-яЁё]+(?:[ -][A-Za-zА-Яа-яЁё]+)?$"
-MAX_LEN_ABOUT_ME = 300
+MAX_LEN_ABOUT_ME = 200
 MAX_LEN_ACTIVITIES = 25
 MIN_LEN_COUNTRY = 2
 MAX_LEN_COUNTRY = 25
 MIN_LEN_CITY = 2
 MAX_LEN_CITY = 25
-PATTERN_CITY = r"^[A-Za-zА-Яа-яЁё]+(?:[ -][A-Za-zА-Яа-яЁё]+)+$"
+PATTERN_CITY = r"^[A-Za-zА-Яа-яЁё]+(?:[ -][A-Za-zА-Яа-яЁё]+)*$"
 MIN_LEN_CITIZENSHIP = 2
 MAX_LEN_CITIZENSHIP = 15
 MAX_LEN_CURRENCY = 3
@@ -37,7 +38,7 @@ class ProfileBase(BaseModel):
         pattern=PATTERN_NAME,
     )
     phone_number: str | None = None
-    age: int | None = None
+    birth_date: date | None = Field(default=None, description="")
     about_me: str | None = Field(
         default=None,
         max_length=MAX_LEN_ABOUT_ME,
@@ -77,6 +78,15 @@ class ProfileBase(BaseModel):
             value = value.upper()
             if not pycountry.currencies.get(alpha_3=value):
                 raise ValueError("Invalid currency code")
+        return value
+
+    @field_validator("birth_date")
+    @classmethod
+    def validate_birth_date(cls, value: date | None) -> date | None:
+        if value is not None:
+            age = relativedelta(datetime.now(UTC).date(), value).years
+            if age < 18:
+                raise ValueError("User must be at least 18 years old")
         return value
 
 
