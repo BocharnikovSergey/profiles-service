@@ -133,7 +133,7 @@ class ProfileSettings(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
     show_profile: bool
-    show_name_in_rewiews: bool
+    show_name_in_reviews: bool
     use_activity_for_recommendations: bool
     use_profile_for_recommendations: bool
     use_city_for_tour_matching: bool
@@ -143,7 +143,7 @@ class ProfileSettingsUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     show_profile: bool | None = None
-    show_name_in_rewiews: bool | None = None
+    show_name_in_reviews: bool | None = None
     use_activity_for_recommendations: bool | None = None
     use_profile_for_recommendations: bool | None = None
     use_city_for_tour_matching: bool | None = None

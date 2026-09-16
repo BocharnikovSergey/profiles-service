@@ -132,7 +132,7 @@ async def delete_favorite_location(
 
 
 @router.get(
-    "me/settings",
+    "/me/settings",
     response_model=ProfileSettings,
 )
 async def get_settings(
@@ -143,7 +143,7 @@ async def get_settings(
 
 
 @router.patch(
-    "me/settings",
+    "/me/settings",
     response_model=ProfileSettings,
 )
 async def update_settings(

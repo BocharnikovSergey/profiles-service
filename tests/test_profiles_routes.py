@@ -25,7 +25,7 @@ def expected_payload(**overrides):
 
 
 class StubProfileManager:
-    def __init__(self):
+    def __init__(self, profile_settings=None):
         self.calls = []
         self.profile = {
             "id": 1,
@@ -44,6 +44,7 @@ class StubProfileManager:
             "created_at": datetime(2024, 1, 1, tzinfo=UTC),
             "updated_at": datetime(2024, 1, 1, tzinfo=UTC),
         }
+        self.profile_settings = profile_settings
 
     async def create_profile(self, user_id, payload):
         self.calls.append(("create_profile", user_id, payload.model_dump()))
@@ -82,6 +83,24 @@ class StubProfileManager:
 
     async def delete_favorite_location(self, user_id, location_id):
         self.calls.append(("delete_favorite_location", user_id, location_id))
+
+    async def get_profile_settings(self, profile_id):
+        self.calls.append(("get_profile_settings", profile_id))
+        return self.profile_settings
+
+    async def update_profile_settings(self, profile_id, payload):
+        self.calls.append(
+            (
+                "update_profile_settings",
+                profile_id,
+                payload.model_dump(exclude_unset=True),
+            )
+        )
+
+        for field, value in payload.model_dump(exclude_unset=True).items():
+            setattr(self.profile_settings, field, value)
+
+        return self.profile_settings
 
 
 @pytest.mark.asyncio
@@ -311,4 +330,100 @@ async def test_update_my_profile_returns_422_for_too_long_field(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert manager.calls == []
+
+
+@pytest.mark.asyncio
+async def test_get_my_profile_settings_uses_current_profile_id(
+    client, override_manager, monkeypatch, profile_settings
+):
+    manager = override_manager(StubProfileManager(profile_settings))
+    monkeypatch.setattr(
+        "app.routes.profiles_routes.get_current_profile_id",
+        lambda _: 1,
+    )
+    response = await client.get("/api/profile/me/settings")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "show_profile": profile_settings.show_profile,
+        "show_name_in_reviews": profile_settings.show_name_in_reviews,
+        "use_activity_for_recommendations": (
+            profile_settings.use_activity_for_recommendations
+        ),
+        "use_profile_for_recommendations": (
+            profile_settings.use_profile_for_recommendations
+        ),
+        "use_city_for_tour_matching": profile_settings.use_city_for_tour_matching,
+    }
+    assert manager.calls == [
+        ("get_profile_settings", 1),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_get_my_profile_settings_unauthorized(
+    client, override_manager, profile_settings
+):
+    manager = override_manager(StubProfileManager(profile_settings))
+    response = await client.get("/api/profile/me/settings")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Unauthorized"
+    assert manager.calls == []
+
+
+@pytest.mark.asyncio
+async def test_update_my_profile_settings_uses_current_profile_id(
+    client, override_manager, monkeypatch, profile_settings
+):
+    manager = override_manager(StubProfileManager(profile_settings))
+
+    monkeypatch.setattr(
+        "app.routes.profiles_routes.get_current_profile_id",
+        lambda _: 1,
+    )
+    payload = {
+        "show_profile": False,
+        "use_city_for_tour_matching": False,
+    }
+
+    response = await client.patch(
+        "/api/profile/me/settings",
+        json=payload,
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "show_profile": payload.get("show_profile"),
+        "show_name_in_reviews": profile_settings.show_name_in_reviews,
+        "use_activity_for_recommendations": (
+            profile_settings.use_activity_for_recommendations
+        ),
+        "use_profile_for_recommendations": (
+            profile_settings.use_profile_for_recommendations
+        ),
+        "use_city_for_tour_matching": payload.get("use_city_for_tour_matching"),
+    }
+    assert manager.calls == [
+        (
+            "update_profile_settings",
+            1,
+            {
+                "show_profile": False,
+                "use_city_for_tour_matching": False,
+            },
+        )
+    ]
+
+
+@pytest.mark.asyncio
+async def test_update_my_profile_settings_unauthorized(
+    client, override_manager, profile_settings
+):
+    manager = override_manager(StubProfileManager(profile_settings))
+    response = await client.patch(
+        "/api/profile/me/settings",
+        json={"show_profile": False},
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Unauthorized"
     assert manager.calls == []
