@@ -18,9 +18,18 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
+PROFILE_RELATIONSHIP_CASCADE = "all, delete-orphan"
+
 
 def bool_setting(default: bool = True) -> Mapped[bool]:
     return mapped_column(Boolean, nullable=False, default=default)
+
+
+class ProfileIdMixin:
+    profile_id: Mapped[int] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
 
 
 class Profile(Base):
@@ -62,22 +71,22 @@ class Profile(Base):
         server_default=func.now(), onupdate=func.now()
     )
     favorites: Mapped[list["FavoriteLocation"]] = relationship(
-        back_populates="profile", cascade="all, delete-orphan"
+        back_populates="profile", cascade=PROFILE_RELATIONSHIP_CASCADE
     )
     devices: Mapped[list["ProfileDevice"]] = relationship(
         back_populates="profile",
-        cascade="all, delete-orphan",
+        cascade=PROFILE_RELATIONSHIP_CASCADE,
     )
     settings: Mapped["ProfileSettings"] = relationship(
         back_populates="profile",
-        cascade="all, delete-orphan",
+        cascade=PROFILE_RELATIONSHIP_CASCADE,
     )
 
     def __repr__(self):
         return f"<Profile {self.first_name}: {self.last_name}>"
 
 
-class FavoriteLocation(Base):
+class FavoriteLocation(ProfileIdMixin, Base):
     __tablename__ = "favorite_locations"
 
     __table_args__ = (
@@ -87,21 +96,15 @@ class FavoriteLocation(Base):
     )
 
     location_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    profile_id: Mapped[int] = mapped_column(
-        ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True
-    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
     profile: Mapped[Profile] = relationship(back_populates="favorites")
 
 
-class ProfileDevice(Base):
+class ProfileDevice(ProfileIdMixin, Base):
     __tablename__ = "profile_devices"
 
-    profile_id: Mapped[int] = mapped_column(
-        ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True
-    )
     device_id: Mapped[str] = mapped_column(String(100), primary_key=True)
     device_name: Mapped[str | None] = mapped_column(String(100))
     platform: Mapped[str | None] = mapped_column(String(100))
@@ -121,12 +124,9 @@ class ProfileDevice(Base):
         )
 
 
-class ProfileSettings(Base):
+class ProfileSettings(ProfileIdMixin, Base):
     __tablename__ = "profile_settings"
 
-    profile_id: Mapped[int] = mapped_column(
-        ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True
-    )
     show_profile: Mapped[bool] = bool_setting()
     show_name_in_reviews: Mapped[bool] = bool_setting()
     use_activity_for_recommendations: Mapped[bool] = bool_setting()

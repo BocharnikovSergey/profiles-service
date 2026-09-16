@@ -17,6 +17,8 @@ down_revision: Union[str, Sequence[str], None] = 'f9c842478df7'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+NOW_DEFAULT = sa.text('now()')
+
 
 def upgrade() -> None:
     """Upgrade schema."""
@@ -28,8 +30,8 @@ def upgrade() -> None:
     sa.Column('use_activity_for_recommendations', sa.Boolean(), nullable=False),
     sa.Column('use_profile_for_recommendations', sa.Boolean(), nullable=False),
     sa.Column('use_city_for_tour_matching', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=NOW_DEFAULT, nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=NOW_DEFAULT, nullable=False),
     sa.ForeignKeyConstraint(['profile_id'], ['profiles.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('profile_id')
     )
@@ -37,7 +39,7 @@ def upgrade() -> None:
                existing_type=postgresql.TIMESTAMP(),
                type_=sa.DateTime(timezone=True),
                existing_nullable=False,
-               existing_server_default=sa.text('now()'))
+               existing_server_default=NOW_DEFAULT)
     # ### end Alembic commands ###
 
 
@@ -48,6 +50,6 @@ def downgrade() -> None:
                existing_type=sa.DateTime(timezone=True),
                type_=postgresql.TIMESTAMP(),
                existing_nullable=False,
-               existing_server_default=sa.text('now()'))
+               existing_server_default=NOW_DEFAULT)
     op.drop_table('profile_settings')
     # ### end Alembic commands ###

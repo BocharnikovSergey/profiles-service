@@ -119,7 +119,7 @@ class ProfileManager:
 
     async def delete_profile_by_id(self, profile_id: int) -> None:
         deleted = await crud_delete_profile_by_id(self.db, profile_id)
-        logger.info("Profile deleted: user_id=%s", profile_id)
+        logger.info("Profile deleted: profile_id=%s", profile_id)
         self._raise_not_found(deleted)
 
     async def add_favorite_location(self, user_id: int, location_id: int):
@@ -160,21 +160,31 @@ class ProfileManager:
         return obj
 
     async def get_profile_settings(self, profile_id: int):
-        return self.get_or_raise_not_found(
+        profile_settings = self.get_or_raise_not_found(
             await crud_get_profile_settings(self.db, profile_id),
             detail="Profile settings not found",
         )
+        logger.info(
+            "Profile settings retrieved: profile_id=%s",
+            profile_id,
+        )
+        return profile_settings
 
     async def update_profile_settings(
         self,
         profile_id: int,
         payload: ProfileSettingsUpdate,
     ):
-        return await crud_update_profile_settings(
+        profile_settings = await crud_update_profile_settings(
             self.db,
             await self.get_profile_settings(profile_id),
             payload,
         )
+        logger.info(
+            "Profile settings updated: profile_id=%s",
+            profile_id,
+        )
+        return profile_settings
 
     @staticmethod
     def _raise_not_found(obj: T, detail: str = "Profile not found") -> None:
