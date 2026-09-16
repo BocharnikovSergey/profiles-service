@@ -2,7 +2,11 @@ import logging
 
 from fastapi import APIRouter, Depends, Request, status
 
-from app.dependencies.auth import check_user_access, get_current_user_id
+from app.dependencies.auth import (
+    check_user_access,
+    get_current_profile_id,
+    get_current_user_id,
+)
 from app.dependencies.profiles import get_profile_manager
 from app.schemas.profiles_schemas import (
     FavoriteLocationCreate,
@@ -10,6 +14,8 @@ from app.schemas.profiles_schemas import (
     FavoriteLocationsResponse,
     ProfileCreate,
     ProfileResponse,
+    ProfileSettings,
+    ProfileSettingsUpdate,
     ProfileUpdate,
 )
 from app.services.profiles_manager import ProfileManager
@@ -122,4 +128,30 @@ async def delete_favorite_location(
     await manager.delete_favorite_location(
         get_current_user_id(request),
         location_id,
+    )
+
+
+@router.get(
+    "me/settings",
+    response_model=ProfileSettings,
+)
+async def get_settings(
+    request: Request,
+    manager: ProfileManager = Depends(get_profile_manager),
+):
+    return await manager.get_profile_settings(get_current_profile_id(request))
+
+
+@router.patch(
+    "me/settings",
+    response_model=ProfileSettings,
+)
+async def update_settings(
+    request: Request,
+    payload: ProfileSettingsUpdate,
+    manager: ProfileManager = Depends(get_profile_manager),
+):
+    return await manager.update_profile_settings(
+        get_current_profile_id(request),
+        payload,
     )

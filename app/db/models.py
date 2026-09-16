@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 from sqlalchemy import (
     JSON,
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
@@ -16,6 +17,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+
+def bool_setting(default: bool = True) -> Mapped[bool]:
+    return mapped_column(Boolean, nullable=False, default=default)
 
 
 class Profile(Base):
@@ -60,6 +65,10 @@ class Profile(Base):
         back_populates="profile", cascade="all, delete-orphan"
     )
     devices: Mapped[list["ProfileDevice"]] = relationship(
+        back_populates="profile",
+        cascade="all, delete-orphan",
+    )
+    settings: Mapped["ProfileSettings"] = relationship(
         back_populates="profile",
         cascade="all, delete-orphan",
     )
@@ -110,3 +119,29 @@ class ProfileDevice(Base):
         return (
             f"<ProfileDevice profile_id={self.profile_id} device_id={self.device_id}>"
         )
+
+
+class ProfileSettings(Base):
+    __tablename__ = "profile_settings"
+
+    profile_id: Mapped[int] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True
+    )
+    show_profile: Mapped[bool] = bool_setting()
+    show_name_in_reviews: Mapped[bool] = bool_setting()
+    use_activity_for_recommendations: Mapped[bool] = bool_setting()
+    use_profile_for_recommendations: Mapped[bool] = bool_setting()
+    use_city_for_tour_matching: Mapped[bool] = bool_setting()
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    profile: Mapped["Profile"] = relationship(
+        back_populates="settings",
+    )
+
+    def __repr__(self):
+        return f"<ProfileSettings profile_id={self.profile_id}>"

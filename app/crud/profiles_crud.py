@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.db.models import Profile
+from app.db.models import Profile, ProfileSettings
 from app.schemas.profiles_schemas import ProfileCreate, ProfileUpdate
+
+from .utils import _update
 
 
 async def _delete_profile(db: AsyncSession, profile: Profile) -> bool:
@@ -17,22 +19,11 @@ async def _delete_profile(db: AsyncSession, profile: Profile) -> bool:
 
 async def _update_profile(
     db: AsyncSession, profile: Profile, payload: ProfileUpdate
-) -> Profile | None:
-    if not profile:
-        return None
-
-    update_data = payload.model_dump(exclude_unset=True)
-
-    for key, value in update_data.items():
-        setattr(profile, key, value)
-
-    await db.commit()
-    await db.refresh(profile)
-
-    return profile
+) -> Profile:
+    return await _update(db, profile, payload)
 
 
-async def _create_new_profie(db: AsyncSession, new_profile: Profile) -> Profile:
+async def _create_new_profile(db: AsyncSession, new_profile: Profile) -> Profile:
     db.add(new_profile)
     await db.commit()
     await db.refresh(new_profile)
@@ -59,16 +50,20 @@ async def create_profile(
     db: AsyncSession, user_id: int, profile_in: ProfileCreate
 ) -> Profile:
     profile_data = profile_in.model_dump(exclude_unset=True)
-    new_profile = Profile(user_id=user_id, **profile_data)
+    new_profile = Profile(
+        user_id=user_id,
+        settings=ProfileSettings(),
+        **profile_data,
+    )
 
-    return await _create_new_profie(db, new_profile)
+    return await _create_new_profile(db, new_profile)
 
 
 async def admin_create_profile(db: AsyncSession, profile_in: ProfileCreate) -> Profile:
     profile_data = profile_in.model_dump(exclude_unset=True)
-    new_profile = Profile(**profile_data)
+    new_profile = Profile(settings=ProfileSettings(), **profile_data)
 
-    return await _create_new_profie(db, new_profile)
+    return await _create_new_profile(db, new_profile)
 
 
 async def get_profile_by_user_id(db: AsyncSession, user_id: int) -> Profile | None:
@@ -107,7 +102,8 @@ async def update_profile_by_user_id(
     db: AsyncSession, user_id: int, payload: ProfileUpdate
 ) -> Profile | None:
     profile = await _find_by_user_id(db, user_id)
-
+    if not profile:
+        return None
     return await _update_profile(db, profile, payload)
 
 
