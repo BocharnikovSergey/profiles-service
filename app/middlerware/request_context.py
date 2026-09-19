@@ -93,6 +93,10 @@ async def _register_device(
         )
 
 
+def _is_profile_context_excluded(path: str) -> bool:
+    return path == "/api/profile/create/" or path.startswith("/api/admin/profile/")
+
+
 async def user_context_middleware(request: Request, call_next):
     """
     Восстанавливает request.state.user из заголовков, которые проставляет gateway.
@@ -110,14 +114,25 @@ async def user_context_middleware(request: Request, call_next):
             if user_id is None:
                 logger.warning("Unable to resolve user_id from request headers")
                 return _unauthorized_response()
-
-            async with AsyncSessionLocal() as session:
-                redis_client = request.app.state.redis
-                profile_id = await _get_profile_id(session, redis_client, user_id)
-                if profile_id is None:
-                    logger.warning("Profile not found for user_id=%s", user_id)
-                    return _unauthorized_response(detail="Profile not found")
-                await _register_device(request, session, redis_client, profile_id)
-            request.state.user["profile_id"] = profile_id
+            request.state.user["id"] = user_id
     response = await call_next(request)
     return response
+
+
+async def profile_context_middleware(request: Request, call_next):
+    """
+    Добавляет profile_id в request.state.user и регистрирует устройство.
+    """
+    if _is_profile_context_excluded(request.url.path):
+        return await call_next(request)
+    if getattr(request.state, "user", None) is not None:
+        user_id = request.state.user.get("id")
+        async with AsyncSessionLocal() as session:
+            redis_client = request.app.state.redis
+            profile_id = await _get_profile_id(session, redis_client, user_id)
+            if profile_id is None:
+                logger.warning("Profile not found for user_id=%s", user_id)
+                return _unauthorized_response(detail="Profile not found")
+            await _register_device(request, session, redis_client, profile_id)
+            request.state.user["profile_id"] = profile_id
+    return await call_next(request)
