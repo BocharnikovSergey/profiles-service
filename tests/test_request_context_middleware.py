@@ -64,32 +64,37 @@ async def test_x_user_claims_header_is_restored_into_request_state(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    ("claims_data", "expected_detail"),
-    [
-        ({}, "Unauthorized"),
-        ({"id": "7"}, "Profile not found"),
-    ],
-)
-async def test_x_user_claims_header_returns_401(
-    client,
-    monkeypatch,
-    claims_data,
-    expected_detail,
-):
-    monkeypatch.setattr(
-        "app.middlerware.request_context.ProfileIDManager",
-        lambda db, redis_client: StubProfileIDManager(
-            db=db, redis_client=redis_client, profile_id=None
-        ),
-    )
-    claims = base64.urlsafe_b64encode(json.dumps(claims_data).encode("utf-8")).decode(
-        "ascii"
-    )
-
+async def test_x_user_claims_without_user_id_returns_401(client):
+    claims = base64.urlsafe_b64encode(
+        json.dumps({}).encode("utf-8")
+    ).decode("ascii")
     response = await client.get(
         "/api/profile/me",
         headers={"X-User-Claims": claims},
     )
+
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {"detail": expected_detail}
+    assert response.json() == {"detail": "Unauthorized"}
+
+
+@pytest.mark.asyncio
+async def test_profile_not_found_returns_401(client, monkeypatch):
+    monkeypatch.setattr(
+        "app.middlerware.request_context.ProfileIDManager",
+        lambda db, redis_client: StubProfileIDManager(
+            db=db,
+            redis_client=redis_client,
+            profile_id=None,
+        ),
+    )
+
+    claims = base64.urlsafe_b64encode(
+        json.dumps({"id": "7"}).encode("utf-8")
+    ).decode("ascii")
+    response = await client.get(
+        "/api/profile/me",
+        headers={"X-User-Claims": claims},
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {"detail": "Profile not found"}
