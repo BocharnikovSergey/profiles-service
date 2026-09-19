@@ -65,9 +65,7 @@ async def test_x_user_claims_header_is_restored_into_request_state(
 
 @pytest.mark.asyncio
 async def test_x_user_claims_without_user_id_returns_401(client):
-    claims = base64.urlsafe_b64encode(
-        json.dumps({}).encode("utf-8")
-    ).decode("ascii")
+    claims = base64.urlsafe_b64encode(json.dumps({}).encode("utf-8")).decode("ascii")
     response = await client.get(
         "/api/profile/me",
         headers={"X-User-Claims": claims},
@@ -88,9 +86,9 @@ async def test_profile_not_found_returns_401(client, monkeypatch):
         ),
     )
 
-    claims = base64.urlsafe_b64encode(
-        json.dumps({"id": "7"}).encode("utf-8")
-    ).decode("ascii")
+    claims = base64.urlsafe_b64encode(json.dumps({"id": "7"}).encode("utf-8")).decode(
+        "ascii"
+    )
     response = await client.get(
         "/api/profile/me",
         headers={"X-User-Claims": claims},
