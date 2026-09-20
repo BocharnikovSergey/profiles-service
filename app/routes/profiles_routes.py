@@ -25,7 +25,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/profile", tags=["Profiles"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProfileResponse)
+@router.post(
+    "/create", status_code=status.HTTP_201_CREATED, response_model=ProfileResponse
+)
 async def create_new_profile(
     payload: ProfileCreate,
     request: Request,

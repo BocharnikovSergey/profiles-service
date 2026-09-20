@@ -110,7 +110,7 @@ async def test_create_profile_uses_current_user_id(
     manager = override_manager(StubProfileManager())
     monkeypatch.setattr("app.routes.profiles_routes.get_current_user_id", lambda _: 7)
 
-    response = await client.post("/api/profile/", json={"first_name": "Ann"})
+    response = await client.post("/api/profile/create", json={"first_name": "Ann"})
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["user_id"] == 7
