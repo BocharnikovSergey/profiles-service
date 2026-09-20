@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 T = TypeVar("T")
 
 
-async def _update[T](
+async def _update_model[T](
     db: AsyncSession,
     obj: T,
     payload: BaseModel,

@@ -1,10 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from app.crud.utils import _update_model
 from app.db.models import ProfileSettings
 from app.schemas.profiles_schemas import ProfileSettingsUpdate
-
-from .utils import _update
 
 
 async def _find_settings_by_profile(
@@ -29,4 +28,4 @@ async def update_profile_settings(
     settings: ProfileSettings,
     payload: ProfileSettingsUpdate,
 ) -> ProfileSettings:
-    return await _update(db, settings, payload)
+    return await _update_model(db, settings, payload)

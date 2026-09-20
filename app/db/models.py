@@ -22,6 +22,7 @@ PROFILE_RELATIONSHIP_CASCADE = "all, delete-orphan"
 
 
 def bool_setting(default: bool = True) -> Mapped[bool]:
+    """Создаёт обязательное булево поле настройки со значением по умолчанию."""
     return mapped_column(Boolean, nullable=False, default=default)
 
 

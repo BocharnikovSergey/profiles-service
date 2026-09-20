@@ -83,10 +83,9 @@ async def get_favorite_locations_by_user_id(
     request: Request,
     manager: ProfileManager = Depends(get_profile_manager),
 ):
-    check_user_access(request, user_id)
-    return FavoriteLocationsResponse(
-        location_ids=await manager.get_favorite_location(user_id)
-    )
+    profile = await manager.get_profile_by_user_id(user_id)
+    check_user_access(request, profile)
+    return FavoriteLocationsResponse(location_ids=profile.favorites)
 
 
 @router.get("/{user_id}", response_model=ProfileResponse)
@@ -95,8 +94,9 @@ async def get_profile_by_id(
     request: Request,
     manager: ProfileManager = Depends(get_profile_manager),
 ):
-    check_user_access(request, user_id)
-    return await manager.get_profile_by_user_id(user_id)
+    profile = await manager.get_profile_by_user_id(user_id)
+    check_user_access(request, profile)
+    return profile
 
 
 @router.patch("/me", response_model=ProfileResponse)
