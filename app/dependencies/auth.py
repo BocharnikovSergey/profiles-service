@@ -39,16 +39,14 @@ def get_current_profile_id(request: Request) -> int:
     return _get_current_id_form_state(request, "profile_id")
 
 
-def check_user_access(request: Request, profile: Profile) -> None:
+def can_view_profile(request: Request, profile: Profile) -> bool:
     current_user_id = get_current_user_id(request)
 
     if current_user_id != profile.user_id and not profile.settings.show_profile:
-        logger.warning(
-            "Access denied: current_user_id=%s requested_user_id=%s",
+        logger.info(
+            "Profile is hidden: current_user_id=%s requested_user_id=%s",
             current_user_id,
             profile.user_id,
         )
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Forbidden",
-        )
+        return False
+    return True

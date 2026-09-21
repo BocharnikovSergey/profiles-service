@@ -112,6 +112,10 @@ class ProfileResponse(ProfileBase):
     updated_at: datetime
 
 
+class ProfileHiddenResponse(BaseModel):
+    detail: str
+
+
 class FavoriteLocationCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

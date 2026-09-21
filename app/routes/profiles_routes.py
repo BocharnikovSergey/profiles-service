@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, Request, status
 
 from app.dependencies.auth import (
-    check_user_access,
+    can_view_profile,
     get_current_profile_id,
     get_current_user_id,
 )
@@ -14,6 +14,7 @@ from app.schemas.profiles_schemas import (
     FavoriteLocationsResponse,
     ProfileCreate,
     ProfileResponse,
+    ProfileHiddenResponse,
     ProfileSettings,
     ProfileSettingsUpdate,
     ProfileUpdate,
@@ -76,7 +77,7 @@ async def get_favorite_locations(
 
 @router.get(
     "/{user_id}/favorite-locations",
-    response_model=FavoriteLocationsResponse,
+    response_model=FavoriteLocationsResponse | ProfileHiddenResponse,
 )
 async def get_favorite_locations_by_user_id(
     user_id: int,
@@ -84,18 +85,24 @@ async def get_favorite_locations_by_user_id(
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     profile = await manager.get_profile_by_user_id(user_id)
-    check_user_access(request, profile)
+    if not can_view_profile(request, profile):
+        return ProfileHiddenResponse(
+            detail="User has hidden their information"
+        )
     return FavoriteLocationsResponse(location_ids=profile.favorites)
 
 
-@router.get("/{user_id}", response_model=ProfileResponse)
+@router.get("/{user_id}", response_model=ProfileResponse | ProfileHiddenResponse)
 async def get_profile_by_id(
     user_id: int,
     request: Request,
     manager: ProfileManager = Depends(get_profile_manager),
 ):
     profile = await manager.get_profile_by_user_id(user_id)
-    check_user_access(request, profile)
+    if not can_view_profile(request, profile):
+        return ProfileHiddenResponse(
+            detail="User has hidden their profile information"
+        )
     return profile
 
 

@@ -144,8 +144,10 @@ async def test_get_profile_by_id_returns_forbidden_for_another_user(
 
     response = await client.get("/api/profile/8")
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json()["detail"] == "Forbidden"
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "detail": "User has hidden their profile information"
+    }
     assert manager.calls == [("get_profile_by_user_id", 8)]
 
 
@@ -290,8 +292,10 @@ async def test_get_favorite_locations_by_user_id_returns_forbidden(
     response = await client.get(
         "/api/profile/8/favorite-locations",
     )
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json()["detail"] == "Forbidden"
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "detail": "User has hidden their information"
+    }
     assert manager.calls == [("get_profile_by_user_id", 8)]
 
 

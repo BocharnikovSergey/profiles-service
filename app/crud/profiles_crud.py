@@ -2,7 +2,7 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.crud.utils import _update_model
 from app.db.models import Profile, ProfileSettings
@@ -49,7 +49,7 @@ async def _find_by_id(db: AsyncSession, profile_id: int):
     return (
         await db.execute(
             select(Profile)
-            .options(selectinload(Profile.settings), selectinload(Profile.favorites))
+            .options(joinedload(Profile.settings), selectinload(Profile.favorites))
             .where(Profile.id == profile_id)
         )
     ).scalar_one_or_none()
@@ -59,7 +59,7 @@ async def _find_by_user_id(db: AsyncSession, user_id: int):
     return (
         await db.execute(
             select(Profile)
-            .options(selectinload(Profile.settings), selectinload(Profile.favorites))
+            .options(joinedload(Profile.settings), selectinload(Profile.favorites))
             .where(Profile.user_id == user_id)
         )
     ).scalar_one_or_none()
