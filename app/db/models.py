@@ -79,9 +79,7 @@ class Profile(Base):
         cascade=PROFILE_RELATIONSHIP_CASCADE,
     )
     settings: Mapped["ProfileSettings"] = relationship(
-        back_populates="profile",
-        cascade=PROFILE_RELATIONSHIP_CASCADE,
-        uselist=False
+        back_populates="profile", cascade=PROFILE_RELATIONSHIP_CASCADE, uselist=False
     )
 
     def __repr__(self):

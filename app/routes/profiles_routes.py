@@ -13,8 +13,8 @@ from app.schemas.profiles_schemas import (
     FavoriteLocationResponse,
     FavoriteLocationsResponse,
     ProfileCreate,
-    ProfileResponse,
     ProfileHiddenResponse,
+    ProfileResponse,
     ProfileSettings,
     ProfileSettingsUpdate,
     ProfileUpdate,
@@ -86,9 +86,7 @@ async def get_favorite_locations_by_user_id(
 ):
     profile = await manager.get_profile_by_user_id(user_id)
     if not can_view_profile(request, profile):
-        return ProfileHiddenResponse(
-            detail="User has hidden their information"
-        )
+        return ProfileHiddenResponse(detail="User has hidden their information")
     return FavoriteLocationsResponse(location_ids=profile.favorites)
 
 
@@ -100,9 +98,7 @@ async def get_profile_by_id(
 ):
     profile = await manager.get_profile_by_user_id(user_id)
     if not can_view_profile(request, profile):
-        return ProfileHiddenResponse(
-            detail="User has hidden their profile information"
-        )
+        return ProfileHiddenResponse(detail="User has hidden their profile information")
     return profile
 
 
